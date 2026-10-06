@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoreConnect – UML Diagrams</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 40px 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 1rem;
+            margin-bottom: 48px;
+        }
+        .diagram-section {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 40px;
+            border: 1px solid #334155;
+            page-break-inside: avoid;
+        }
+        .diagram-section h2 {
+            font-size: 1.5rem;
+            color: #60a5fa;
+            margin-bottom: 8px;
+        }
+        .diagram-section .desc {
+            color: #94a3b8;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 32px 16px;
+            overflow-x: auto;
+            min-height: 200px;
+        }
+        .mermaid svg {
+            max-width: 100%;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 16px;
+        }
+        .badge-class { background: #3b82f620; color: #60a5fa; border: 1px solid #3b82f640; }
+        .badge-activity { background: #22c55e20; color: #4ade80; border: 1px solid #22c55e40; }
+        .badge-state { background: #f59e0b20; color: #fbbf24; border: 1px solid #f59e0b40; }
+        .badge-erd { background: #8b5cf620; color: #a78bfa; border: 1px solid #8b5cf640; }
+        .section-note {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #0f172a;
+            border-radius: 8px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            border-left: 3px solid #3b82f6;
+        }
+        .print-note {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-top: 40px;
+            padding: 16px;
+            border-top: 1px solid #334155;
+        }
+        .nav-pills {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .nav-pill {
+            background: #1e293b;
+            color: #93c5fd;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid #334155;
+            transition: all 0.2s ease;
+        }
+        .nav-pill:hover {
+            background: #3b82f6;
+            color: #ffffff;
+            border-color: #3b82f6;
+        }
+        .metric-ribbon {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        .metric-item {
+            background: #1e293b80;
+            border: 1px solid #334155;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        .metric-item strong {
+            color: #38bdf8;
+            font-size: 1rem;
+        }
+        @media print {
+            body { background: #fff; color: #000; padding: 20px; }
+            .diagram-section { border: 1px solid #ccc; background: #fff; break-inside: avoid; }
+            .diagram-section h2 { color: #1e40af; }
+            .diagram-section .desc { color: #555; }
+            .section-note { background: #f1f5f9; color: #333; }
+            .print-note, .nav-pills { display: none; }
+            h1 { -webkit-text-fill-color: #1e40af; }
+            .subtitle { color: #555; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>StoreConnect – Omnichannel Retail Platform</h1>
+        <p class="subtitle">PSI-2026 Sep ASDE GGN | UML Design & Data Layer Artifacts | CPS Sprint 1</p>
+
+        <div class="nav-pills">
+            <a href="#sec-class" class="nav-pill">1. Class Diagrams</a>
+            <a href="#sec-activity" class="nav-pill">2. Activity Diagrams</a>
+            <a href="#sec-state" class="nav-pill">3. State Machine</a>
+            <a href="#sec-erd-flow" class="nav-pill">4a. ER Flow Architecture</a>
+            <a href="#sec-erd" class="nav-pill">4b. Relational ERD</a>
+        </div>
+
+        <div class="metric-ribbon">
+            <div class="metric-item"><strong>5</strong> Stores (Delhi-NCR)</div>
+            <div class="metric-item"><strong>4</strong> Categories</div>
+            <div class="metric-item"><strong>12</strong> Products</div>
+            <div class="metric-item"><strong>60</strong> Inventory Rows</div>
+            <div class="metric-item"><strong>5</strong> Test Customers</div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- CLASS DIAGRAM PART 1: CORE ENTITIES                   -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="diagram-section" id="sec-class">
+            <span class="badge badge-class">CLASS DIAGRAM</span>
+            <h2>1a. Domain Class Diagram – Core Entities</h2>
+            <p class="desc">Product catalog, store locations, customers, and inventory tracking.</p>
+            <div class="mermaid">
+%%{init: {'theme': 'default', 'class': {'useMaxWidth': true, 'defaultRenderer': 'elk', 'padding': 20}}}%%
+classDiagram
+    direction TB
+
+    class Category {
+        -Long id
+        -String name
+        -String description
+    }
+
+    class ProductStatus {
+        &lt;&lt;enumeration&gt;&gt;
+        ACTIVE
+        INACTIVE
+    }
+
+    class Product {
+        -Long id
+        -String name
+        -String description
+        -double price
+        -String imageUrl
+        -ProductStatus status
+        -LocalDateTime createdAt
+        -LocalDateTime updatedAt
+    }
+
+    class StoreStatus {
+        &lt;&lt;enumeration&gt;&gt;
+        ACTIVE
+        INACTIVE
+    }
+
+    class Store {
+        -Long id
+        -String name
+        -String address
+        -String city
+        -String pincode
+        -StoreStatus status
+    }
+
+    class Customer {
+        -Long id
+        -String firstName
+        -String lastName
+        -String email
+        -String passwordHash
+        -String phone
+        -LocalDateTime registeredAt
+    }
+
+    class Inventory {
+        -Long id
+        -int quantity
+        -int reservedQuantity
+        -LocalDateTime lastUpdated
+        +getAvailableQuantity() int
+        +reserve(int qty) boolean
+        +release(int qty) void
+        +restock(int qty) void
+    }
+
+    Product --> Category : belongs to
+    Product --> ProductStatus : has
+    Store --> StoreStatus : has
+    Inventory --> Product : tracks stock of
+    Inventory --> Store : held at
+            </div>
+            <div class="section-note">
+                <strong>Key:</strong> A Product belongs to a Category. Each Store has a status. Inventory links a Product to a Store with quantity and reservation tracking.
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- CLASS DIAGRAM PART 2: CART & ORDER ENTITIES           -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="diagram-section">
+            <span class="badge badge-class">CLASS DIAGRAM</span>
+            <h2>1b. Domain Class Diagram – Cart &amp; Order Entities</h2>
+            <p class="desc">Shopping cart, order lifecycle, and line items.</p>
+            <div class="mermaid">
+%%{init: {'theme': 'default', 'class': {'useMaxWidth': true, 'defaultRenderer': 'elk', 'padding': 20}}}%%
+classDiagram
+    direction TB
+
+    class Cart {
+        -Long id
+        -LocalDateTime createdAt
+        -LocalDateTime updatedAt
+        +addItem(CartItem) void
+        +removeItem(Long) void
+        +updateItemQty(Long, int) void
+        +getTotalAmount() double
+        +clear() void
+    }
+
+    class CartItem {
+        -Long id
+        -int quantity
+        -double priceAtAddition
+        +getSubtotal() double
+    }
+
+    class OrderStatus {
+        &lt;&lt;enumeration&gt;&gt;
+        CREATED
+        CONFIRMED
+        PROCESSING
+        READY
+        DELIVERED
+        CANCELLED
+    }
+
+    class Order {
+        -Long id
+        -OrderStatus status
+        -double totalAmount
+        -LocalDateTime createdAt
+        -LocalDateTime updatedAt
+        +calculateTotal() double
+        +transitionTo(OrderStatus) boolean
+        +canTransitionTo(OrderStatus) boolean
+        +isCancellable() boolean
+    }
+
+    class OrderItem {
+        -Long id
+        -int quantity
+        -double priceAtOrder
+        +getSubtotal() double
+    }
+
+    class Customer {
+        -Long id
+        -String email
+    }
+
+    class Product {
+        -Long id
+        -String name
+    }
+
+    class Store {
+        -Long id
+        -String name
+    }
+
+    Cart "1" --> "1" Customer : owned by
+    Cart "1" --> "0..*" CartItem : contains
+    CartItem --> Product : references
+
+    Order --> Customer : placed by
+    Order --> Store : fulfilled at
+    Order "1" --> "1..*" OrderItem : contains
+    Order --> OrderStatus : has status
+    OrderItem --> Product : references
+            </div>
+            <div class="section-note">
+                <strong>Key:</strong> Each Customer has one Cart containing CartItems. An Order is placed by a Customer, fulfilled at a Store, and contains OrderItems. Price is captured at time of addition/order.
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ENTITY RELATIONSHIP OVERVIEW                          -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="diagram-section">
+            <span class="badge badge-class">RELATIONSHIP MAP</span>
+            <h2>1c. Entity Relationship Overview</h2>
+            <p class="desc">High-level view showing how all entities connect across the system.</p>
+            <div class="mermaid">
+%%{init: {'theme': 'default', 'flowchart': {'useMaxWidth': true, 'nodeSpacing': 60, 'rankSpacing': 60, 'curve': 'basis'}}}%%
+graph LR
+    Category["📁 Category"] --- Product["📦 Product"]
+    Product --- Inventory["📊 Inventory"]
+    Store["🏪 Store"] --- Inventory
+    Customer["👤 Customer"] --- Cart["🛒 Cart"]
+    Cart --- CartItem["📋 CartItem"]
+    CartItem --- Product
+    Customer --- Order["📄 Order"]
+    Order --- OrderItem["📋 OrderItem"]
+    OrderItem --- Product
+    Order --- Store
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ACTIVITY DIAGRAM: ORDER PLACEMENT (Linear)            -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="diagram-section" id="sec-activity">
+            <span class="badge badge-activity">ACTIVITY DIAGRAM</span>
+            <h2>2. Customer Order Placement Flow</h2>
+            <p class="desc">The primary business journey: customer discovers a product → checks availability → adds to cart → places order → inventory reserved → order confirmed.</p>
+            <div class="mermaid">
+%%{init: {'theme': 'default', 'flowchart': {'useMaxWidth': true, 'nodeSpacing': 40, 'rankSpacing': 50, 'curve': 'basis'}}}%%
+flowchart TD
+    subgraph PHASE1["🔐 Authentication"]
+        A1(["🟢 Start"]) --> A2{"Customer\nLogged In?"}
+        A2 -->|No| A3["Register / Login"]
+        A3 --> A4["Authenticated ✓"]
+        A2 -->|Yes| A4
+    end
+
+    subgraph PHASE2["🔍 Product Discovery"]
+        B1["Browse Product Catalog"] --> B2["Search / Filter\nby Name or Category"]
+        B2 --> B3["View Product Details"]
+    end
+
+    subgraph PHASE3["📍 Availability Check"]
+        C1["Select a Store"] --> C2{"Stock Available\nat Store?"}
+        C2 -->|No| C3["Show: Out of Stock"]
+        C3 --> C1
+        C2 -->|Yes| C4["Add Product to Cart ✓"]
+    end
+
+    subgraph PHASE4["🛒 Cart Management"]
+        D1["View Cart"] --> D2{"Action?"}
+        D2 -->|"Update Qty"| D3["Update Quantity"]
+        D3 --> D1
+        D2 -->|"Remove"| D4["Remove Item"]
+        D4 --> D1
+        D2 -->|"Checkout"| D5["Proceed to Place Order"]
+    end
+
+    subgraph PHASE5["⚙️ System Processing"]
+        E1{"Validate Inventory\nfor All Items"} -->|Insufficient| E2["❌ Reject Order\nNotify Customer"]
+        E1 -->|Available| E3["Reserve Inventory"]
+        E3 --> E4["Assign Fulfillment Store"]
+        E4 --> E5["Set Status: CONFIRMED"]
+        E5 --> E6["Publish Kafka Event"]
+        E6 --> E7["Show Confirmation ✅"]
+        E7 --> E8(["🔴 End"])
+    end
+
+    PHASE1 --> PHASE2
+    PHASE2 --> PHASE3
+    PHASE3 --> PHASE4
+    PHASE4 --> PHASE5
+    E2 --> D1
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ACTIVITY DIAGRAM: STORE FULFILLMENT                   -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="diagram-section">
+            <span class="badge badge-activity">ACTIVITY DIAGRAM</span>
+            <h2>3. Store Operator – Order Fulfillment Flow</h2>
+            <p class="desc">Store operator processes incoming orders through the fulfillment lifecycle until delivery.</p>
+            <div class="mermaid">
+%%{init: {'theme': 'default', 'flowchart': {'useMaxWidth': true, 'nodeSpacing': 40, 'rankSpacing': 50, 'curve': 'basis'}}}%%
+flowchart TD
+    subgraph AUTH["🔐 Login"]
+        F1(["🟢 Start"]) --> F2["Store Operator Login"]
+    end
+
+    subgraph REVIEW["📋 Order Review"]
+        F3["View Store Dashboard"] --> F4["View Incoming\nConfirmed Orders"]
+        F4 --> F5["Select an Order"]
+        F5 --> F6["Review Order Items\n& Required Stock"]
+    end
+
+    subgraph FULFILL["📦 Fulfillment Process"]
+        F7["Update Status:\nCONFIRMED → PROCESSING"] --> F8["Pick & Prepare\nItems from Store"]
+        F8 --> F9["Update Status:\nPROCESSING → READY"]
+        F9 --> F10["Customer Pickup\nor Dispatch"]
+        F10 --> F11["Update Status:\nREADY → DELIVERED"]
+    end
+
+    subgraph COMPLETE["✅ Complete"]
+        F12["Customer Notified:\nOrder Delivered ✅"] --> F13(["🔴 End"])
+    end
+
+    AUTH --> REVIEW
+    REVIEW --> FULFILL
+    FULFILL --> COMPLETE
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ORDER CANCELLATION FLOW                               -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="diagram-section">
+            <span class="badge badge-activity">ACTIVITY DIAGRAM</span>
+            <h2>4. Order Cancellation Flow</h2>
+            <p class="desc">What happens when a customer or operator cancels an order — reserved stock is released.</p>
+            <div class="mermaid">
+%%{init: {'theme': 'default', 'flowchart': {'useMaxWidth': true, 'nodeSpacing': 40, 'rankSpacing': 50, 'curve': 'basis'}}}%%
+flowchart TD
+    G1(["🟢 Cancel Request"]) --> G2{"Current\nOrder Status?"}
+    G2 -->|CREATED| G3["Cancel Order\nNo Stock to Release"]
+    G2 -->|CONFIRMED| G4["Release Reserved\nInventory"]
+    G2 -->|PROCESSING| G5["Release Reserved\nInventory"]
+    G2 -->|"READY / DELIVERED"| G6["❌ Cannot Cancel\nOrder Already Fulfilled"]
+    G4 --> G7["Update Status:\nCANCELLED"]
+    G5 --> G7
+    G3 --> G7
+    G7 --> G8["Notify Customer:\nOrder Cancelled"]
+    G8 --> G9["Publish Kafka Event:\nOrderCancelled"]
+    G9 --> G10(["🔴 End"])
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- STATE MACHINE                                         -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="diagram-section" id="sec-state">
+            <span class="badge badge-state">STATE DIAGRAM</span>
+            <h2>5. Order Status State Machine</h2>
+            <p class="desc">Valid order status transitions. The system enforces these rules — no invalid transitions are allowed.</p>
+            <div class="mermaid">
+%%{init: {'theme': 'default', 'state': {'useMaxWidth': true}}}%%
+stateDiagram-v2
+    [*] --> CREATED : Customer places order
+
+    CREATED --> CONFIRMED : Inventory validated\nand reserved
+    CREATED --> CANCELLED : Customer cancels
+
+    CONFIRMED --> PROCESSING : Store begins\nfulfillment
+    CONFIRMED --> CANCELLED : Customer cancels\nStock released
+
+    PROCESSING --> READY : Items prepared\nfor pickup
+
+    READY --> DELIVERED : Customer\nreceives order
+
+    PROCESSING --> CANCELLED : Fulfillment issue\nStock released
+
+    DELIVERED --> [*]
+    CANCELLED --> [*]
+            </div>
+            <div class="section-note">
+                <strong>Valid transitions:</strong> CREATED → CONFIRMED → PROCESSING → READY → DELIVERED. Cancellation is allowed from CREATED, CONFIRMED, or PROCESSING (with stock release). Orders that are READY or DELIVERED cannot be cancelled.
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ENTITY RELATIONSHIP ARCHITECTURE & FLOW (ERD)           -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="diagram-section" id="sec-erd-flow">
+            <span class="badge badge-erd">DATABASE ARCHITECTURE</span>
+            <h2>4a. Entity Relationship Flow Architecture</h2>
+            <p class="desc">Three-phase operational flow: Master Catalog & Stores → Store Inventory Bridge → Customer Orders & Line Items.</p>
+            <div class="mermaid">
+flowchart LR
+    subgraph P1["PHASE 1: Master Catalog & Stores"]
+        direction TB
+        CAT["<b>CATEGORIES</b><br/>🔑 id (PK)<br/>• name<br/>• description"]
+        PROD["<b>PRODUCTS</b><br/>🔑 id (PK)<br/>🔗 category_id (FK)<br/>• sku (UK)<br/>• name<br/>• price<br/>• is_active"]
+        STR["<b>STORES</b><br/>🔑 id (PK)<br/>• code (UK)<br/>• name<br/>• city<br/>• address"]
+        CAT -->|"1 : N (classifies)"| PROD
+    end
+
+    subgraph P2["PHASE 2: Store Inventory Bridge"]
+        direction TB
+        INV["<b>STORE_INVENTORY</b><br/>🔑 id (PK)<br/>🔗 store_id (FK)<br/>🔗 product_id (FK)<br/>• quantity_available<br/>• quantity_reserved<br/>• reorder_threshold"]
+    end
+
+    subgraph P3["PHASE 3: Customer Orders & Fulfillment"]
+        direction TB
+        CUST["<b>CUSTOMERS</b><br/>🔑 id (PK)<br/>• email (UK)<br/>• first_name<br/>• last_name<br/>• phone"]
+        ORD["<b>ORDERS</b><br/>🔑 id (PK)<br/>• order_number (UK)<br/>🔗 customer_id (FK)<br/>🔗 store_id (FK)<br/>• status<br/>• fulfillment_type<br/>• total_amount"]
+        ITEM["<b>ORDER_ITEMS</b><br/>🔑 id (PK)<br/>🔗 order_id (FK)<br/>🔗 product_id (FK)<br/>• quantity<br/>• unit_price<br/>• subtotal"]
+        CUST -->|"1 : N (places)"| ORD
+        ORD -->|"1 : N (contains)"| ITEM
+    end
+
+    PROD -->|"1 : N (stocked as)"| INV
+    STR -->|"1 : N (maintains)"| INV
+    STR -.->|"1 : N (fulfills order)"| ORD
+    PROD -.->|"1 : N (line item)"| ITEM
+            </div>
+        </div>
+
+        <div class="diagram-section" id="sec-erd">
+            <span class="badge badge-erd">ENTITY RELATIONSHIP DIAGRAM (ERD)</span>
+            <h2>4b. Relational Database Model (ERD)</h2>
+            <p class="desc">Database schema entities, primary keys (PK), foreign keys (FK), and 1:N cardinalities for PostgreSQL / ANSI SQL persistence.</p>
+            <div class="mermaid">
+erDiagram
+    CATEGORY ||--o{ PRODUCT : "contains (1:N)"
+    STORE ||--o{ STORE_INVENTORY : "maintains stock (1:N)"
+    PRODUCT ||--o{ STORE_INVENTORY : "stocked in (1:N)"
+    CUSTOMER ||--o{ ORDERS : "places (1:N)"
+    STORE ||--o{ ORDERS : "fulfills (1:N)"
+    ORDERS ||--|{ ORDER_ITEM : "contains (1:N)"
+    PRODUCT ||--o{ ORDER_ITEM : "ordered in (1:N)"
+
+    CATEGORY {
+        varchar id PK
+        varchar name
+        varchar description
+    }
+
+    PRODUCT {
+        varchar id PK
+        varchar sku UK
+        varchar name
+        varchar category_id FK
+        decimal price
+        boolean is_active
+    }
+
+    STORE {
+        varchar id PK
+        varchar code UK
+        varchar name
+        varchar city
+        varchar address
+        varchar phone
+        boolean is_active
+    }
+
+    STORE_INVENTORY {
+        varchar id PK
+        varchar store_id FK
+        varchar product_id FK
+        int quantity_available
+        int quantity_reserved
+        int reorder_threshold
+    }
+
+    CUSTOMER {
+        varchar id PK
+        varchar first_name
+        varchar last_name
+        varchar email UK
+        varchar phone
+        varchar address
+    }
+
+    ORDERS {
+        varchar id PK
+        varchar order_number UK
+        varchar customer_id FK
+        varchar store_id FK
+        varchar status
+        varchar fulfillment_type
+        decimal total_amount
+    }
+
+    ORDER_ITEM {
+        varchar id PK
+        varchar order_id FK
+        varchar product_id FK
+        int quantity
+        decimal unit_price
+        decimal subtotal
+    }
+            </div>
+            <div class="section-note">
+                <strong>Omnichannel Architecture Invariants:</strong>
+                <ul style="margin-left: 20px; margin-top: 6px; line-height: 1.6;">
+                    <li><strong>Store-Level Stock:</strong> Inventory is maintained by <code>(store_id, product_id)</code> with a unique constraint, preventing centralized stock discrepancies.</li>
+                    <li><strong>Oversell Prevention:</strong> <code>quantity_available >= 0</code> check constraint ensures atomic reservation at the database level.</li>
+                    <li><strong>Order Attribution:</strong> Every order links to both a <code>customer_id</code> and a fulfilling <code>store_id</code> for localized pickup/delivery.</li>
+                    <li><strong>Historical Accuracy:</strong> <code>ORDER_ITEM</code> captures the purchased <code>unit_price</code> snapshot independently of future catalog price changes.</li>
+                </ul>
+            </div>
+        </div>
+
+        <p class="print-note">💡 Press <strong>Ctrl+P</strong> to print / save as PDF for submission. Use "Save as PDF" as the printer destination.</p>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                nodeSpacing: 50,
+                rankSpacing: 60,
+                padding: 20
+            },
+            class: {
+                useMaxWidth: true
+            },
+            state: {
+                useMaxWidth: true
+            },
+            er: {
+                useMaxWidth: true
+            }
+        });
+    </script>
+</body>
+</html>
