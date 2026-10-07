@@ -17,6 +17,8 @@ To ensure realistic testing of omnichannel availability, search, and order fulfi
 | **Products** | **12 SKUs** | Realistic electronics, wearables, computing, and essentials |
 | **Store Inventory** | **60 Records** | 5 stores $\times$ 12 products (includes in-stock, low-stock, and out-of-stock items) |
 | **Customers** | **5 Accounts** | Registered test customers |
+| **Active Carts** | **1 Cart** | Persisted shopping basket awaiting checkout (`CUST-005`) |
+| **Cart Items** | **2 Line Items** | Active products inside shopping cart |
 | **Sample Orders** | **4 Orders** | Representative orders across different lifecycle states |
 | **Order Items** | **7 Line Items** | Line item entries showing snapshot unit prices |
 
@@ -112,7 +114,28 @@ To ensure realistic testing of omnichannel availability, search, and order fulfi
 
 ---
 
-## 7. Tables: `orders` and `order_items` (Sample Orders)
+## 7. Table: `carts` (1 Active Shopping Basket)
+
+Persisted active shopping basket demonstrating cross-device cart persistence awaiting customer checkout:
+
+| ID | Customer ID | Selected Store ID | Created At | Last Updated |
+|:---|:---|:---|:---|:---|
+| `CART-001` | `CUST-005` (Vikram Malhotra) | `STORE-GGN-01` (CyberHub) | 2026-10-04 15:00:00 | 2026-10-04 15:10:00 |
+
+---
+
+## 8. Table: `cart_items` (2 Active Line Items)
+
+Items currently held in `CART-001` awaiting checkout:
+
+| ID | Cart ID | Product ID | Quantity | Added At |
+|:---|:---|:---|:---:|:---|
+| `CITEM-001` | `CART-001` | `PROD-002` (Bose QuietComfort 45) | 1 | 2026-10-04 15:02:00 |
+| `CITEM-002` | `CART-001` | `PROD-011` (Wildcraft Ergonomic Backpack 28L) | 1 | 2026-10-04 15:08:00 |
+
+---
+
+## 9. Tables: `orders` and `order_items` (Sample Historic Orders)
 
 | Order Number | Customer | Fulfillment Store | Status | Channel | Total (INR) | Line Items Summary |
 |:---|:---|:---|:---|:---|:---:|:---|
@@ -120,3 +143,19 @@ To ensure realistic testing of omnichannel availability, search, and order fulfi
 | `ORD-20261002-1002` | Priya Verma | CP Flagship (`STORE-DEL-01`) | **READY_FOR_PICKUP** | Store Pickup | ₹41,900.00 | 1x Apple Watch Series 9 (₹41,900) |
 | `ORD-20261003-1003` | Rohan Mehta | Mall of India (`STORE-NOI-01`)| **PROCESSING** | Store Pickup | ₹16,494.00 | 1x Logitech MX Master 3S (₹8,995) + 1x Keychron K2 (₹7,499) |
 | `ORD-20261004-1004` | Ananya Iyer | Select Citywalk (`STORE-DEL-02`)| **CONFIRMED** | Home Delivery | ₹26,895.00 | 1x AirPods Pro 2 (₹24,900) + 1x Nike Tee (₹1,995) |
+
+---
+
+## 10. Database Table Verification Summary
+
+| Table Name | Row Count | Integrity Constraint Checked |
+|:---|:---:|:---|
+| `stores` | 5 | Unique store codes, non-null city |
+| `categories` | 4 | Unique primary keys |
+| `products` | 12 | Foreign key to `categories`, non-negative price |
+| `store_inventory` | 60 | Unique `(store_id, product_id)`, non-negative stock |
+| `customers` | 5 | Unique email address |
+| `carts` | 1 | Unique `customer_id` (1:1), Foreign key to `stores` |
+| `cart_items` | 2 | Unique `(cart_id, product_id)`, quantity > 0 |
+| `orders` | 4 | Foreign keys to `customers` and `stores`, valid status |
+| `order_items` | 7 | Foreign keys to `orders` (CASCADE) and `products`, snapshot price |

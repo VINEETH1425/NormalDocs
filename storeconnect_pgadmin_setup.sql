@@ -11,6 +11,8 @@
 -- ------------------------------------------------------------------------------
 -- STEP 1: DROP TABLES (Clean Slate)
 -- ------------------------------------------------------------------------------
+DROP TABLE IF EXISTS cart_items CASCADE;
+DROP TABLE IF EXISTS carts CASCADE;
 DROP TABLE IF EXISTS order_items CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS customers CASCADE;
@@ -88,7 +90,46 @@ CREATE TABLE customers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 6. Orders Table (Transactional Aggregate Root)
+-- 6. Carts Table (Active Customer Shopping Cart)
+-- Cardinalities:
+--   - 1-to-1 (1:1) with Customers: One Customer has exactly 1 active cart
+--   - Many-to-1 (N:1) with Stores: Cart is associated with selected fulfillment store
+CREATE TABLE carts (
+    id VARCHAR(50) PRIMARY KEY,
+    customer_id VARCHAR(50) NOT NULL,
+    store_id VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- Unique constraint enforces 1 active cart per customer
+    CONSTRAINT uq_customer_cart UNIQUE (customer_id),
+    -- Foreign Key to Customers (1:1)
+    CONSTRAINT fk_carts_customer 
+        FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+    -- Foreign Key to Stores (N:1)
+    CONSTRAINT fk_carts_store 
+        FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE SET NULL
+);
+
+-- 7. Cart Items Table
+-- Cardinality: Many-to-Many (M:N) Bridge Table between Carts and Products!
+-- (One Cart contains Many Products; One Product can appear in Many Carts)
+CREATE TABLE cart_items (
+    id VARCHAR(50) PRIMARY KEY,
+    cart_id VARCHAR(50) NOT NULL,
+    product_id VARCHAR(50) NOT NULL,
+    quantity INT NOT NULL CHECK (quantity > 0),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- Unique constraint ensures 1 line item per product in each cart
+    CONSTRAINT uq_cart_product UNIQUE (cart_id, product_id),
+    -- Foreign Key to Carts: Many items belong to 1 Cart (N:1)
+    CONSTRAINT fk_cart_items_cart 
+        FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
+    -- Foreign Key to Products: Many items reference 1 Product (N:1)
+    CONSTRAINT fk_cart_items_product 
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+-- 8. Orders Table (Transactional Aggregate Root)
 -- Cardinalities:
 --   - Many-to-1 (N:1) with Customers: Many Orders placed by 1 Customer
 --   - Many-to-1 (N:1) with Stores: Many Orders fulfilled by 1 Store
@@ -110,7 +151,7 @@ CREATE TABLE orders (
         FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE RESTRICT
 );
 
--- 7. Order Items Table
+-- 9. Order Items Table
 -- Cardinality: Many-to-Many (M:N) Bridge Table between Orders and Products!
 -- (One Order contains Many Products; One Product can appear in Many Orders)
 CREATE TABLE order_items (
@@ -133,6 +174,9 @@ CREATE TABLE order_items (
 -- ------------------------------------------------------------------------------
 CREATE INDEX idx_products_category ON products(category_id);
 CREATE INDEX idx_inventory_store_product ON store_inventory(store_id, product_id);
+CREATE INDEX idx_carts_customer ON carts(customer_id);
+CREATE INDEX idx_cart_items_cart ON cart_items(cart_id);
+CREATE INDEX idx_cart_items_product ON cart_items(product_id);
 CREATE INDEX idx_orders_customer ON orders(customer_id);
 CREATE INDEX idx_orders_store ON orders(store_id);
 CREATE INDEX idx_orders_status ON orders(status);
@@ -258,14 +302,23 @@ INSERT INTO customers (id, first_name, last_name, email, phone, address) VALUES
 ('CUST-004', 'Ananya', 'Iyer',      'ananya.iyer@example.com',     '+91 9840112233', 'D-Block, Saket, South Delhi'),
 ('CUST-005', 'Vikram', 'Malhotra',  'vikram.malhotra@example.com', '+91 9822998877', 'Phase 5, Udyog Vihar, Gurugram');
 
--- 6. Insert Sample Historic Orders (4 Orders across Lifecycle States)
+-- 6. Insert Active Shopping Carts (1 Active Cart)
+INSERT INTO carts (id, customer_id, store_id, created_at, updated_at) VALUES
+('CART-001', 'CUST-005', 'STORE-GGN-01', '2026-10-04 15:00:00', '2026-10-04 15:10:00');
+
+-- 7. Insert Active Cart Items (2 Items in Active Cart)
+INSERT INTO cart_items (id, cart_id, product_id, quantity, created_at) VALUES
+('CITEM-001', 'CART-001', 'PROD-002', 1, '2026-10-04 15:02:00'),
+('CITEM-002', 'CART-001', 'PROD-011', 1, '2026-10-04 15:08:00');
+
+-- 8. Insert Sample Historic Orders (4 Orders across Lifecycle States)
 INSERT INTO orders (id, order_number, customer_id, store_id, status, fulfillment_type, total_amount, created_at, updated_at) VALUES
 ('ORD-1001', 'ORD-20261001-1001', 'CUST-001', 'STORE-GGN-01', 'COMPLETED',        'STORE_PICKUP',  31099.00, '2026-10-01 10:30:00', '2026-10-01 16:45:00'),
 ('ORD-1002', 'ORD-20261002-1002', 'CUST-002', 'STORE-DEL-01', 'READY_FOR_PICKUP', 'STORE_PICKUP',  41900.00, '2026-10-02 11:15:00', '2026-10-02 14:20:00'),
 ('ORD-1003', 'ORD-20261003-1003', 'CUST-003', 'STORE-NOI-01', 'PROCESSING',       'STORE_PICKUP',  16494.00, '2026-10-03 09:00:00', '2026-10-03 10:30:00'),
 ('ORD-1004', 'ORD-20261004-1004', 'CUST-004', 'STORE-DEL-02', 'CONFIRMED',        'HOME_DELIVERY', 26895.00, '2026-10-04 14:10:00', '2026-10-04 14:12:00');
 
--- 7. Insert Order Line Items (7 Items)
+-- 9. Insert Order Line Items (7 Items)
 INSERT INTO order_items (id, order_id, product_id, quantity, unit_price, subtotal) VALUES
 -- ORD-1001 Items (Sony Headphones + 2 Blue Tokai Coffee)
 ('ITEM-101', 'ORD-1001', 'PROD-001', 1, 29999.00, 29999.00),
@@ -294,6 +347,10 @@ UNION ALL
 SELECT 'store_inventory', COUNT(*) FROM store_inventory
 UNION ALL
 SELECT 'customers', COUNT(*) FROM customers
+UNION ALL
+SELECT 'carts', COUNT(*) FROM carts
+UNION ALL
+SELECT 'cart_items', COUNT(*) FROM cart_items
 UNION ALL
 SELECT 'orders', COUNT(*) FROM orders
 UNION ALL

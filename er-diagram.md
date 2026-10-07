@@ -28,12 +28,18 @@ flowchart LR
         INV["<b>STORE_INVENTORY</b><br/>🔑 id (PK)<br/>🔗 store_id (FK)<br/>🔗 product_id (FK)<br/>• quantity_available<br/>• quantity_reserved<br/>• reorder_threshold"]
     end
 
-    %% Phase 3: Customer Orders & Fulfillment
-    subgraph P3["PHASE 3: Customer Orders & Fulfillment"]
+    %% Phase 3: Customer Basket, Orders & Fulfillment
+    subgraph P3["PHASE 3: Customer Shopping Cart & Orders"]
         direction TB
         CUST["<b>CUSTOMERS</b><br/>🔑 id (PK)<br/>• email (UK)<br/>• first_name<br/>• last_name<br/>• phone"]
+        CART["<b>CARTS</b><br/>🔑 id (PK)<br/>🔗 customer_id (FK, UK)<br/>🔗 store_id (FK)<br/>• updated_at"]
+        CITEM["<b>CART_ITEMS</b><br/>🔑 id (PK)<br/>🔗 cart_id (FK)<br/>🔗 product_id (FK)<br/>• quantity"]
         ORD["<b>ORDERS</b><br/>🔑 id (PK)<br/>• order_number (UK)<br/>🔗 customer_id (FK)<br/>🔗 store_id (FK)<br/>• status<br/>• fulfillment_type<br/>• total_amount"]
         ITEM["<b>ORDER_ITEMS</b><br/>🔑 id (PK)<br/>🔗 order_id (FK)<br/>🔗 product_id (FK)<br/>• quantity<br/>• unit_price<br/>• subtotal"]
+        
+        CUST -->|"1 : 1 (owns active)"| CART
+        CART -->|"1 : N (contains)"| CITEM
+        CART -->|"converts on checkout"| ORD
         CUST -->|"1 : N (places)"| ORD
         ORD -->|"1 : N (contains)"| ITEM
     end
@@ -41,8 +47,10 @@ flowchart LR
     %% Cross-Phase Flow Connections
     PROD -->|"1 : N (stocked as)"| INV
     STR -->|"1 : N (maintains)"| INV
+    STR -.->|"1 : N (selected at)"| CART
     STR -.->|"1 : N (fulfills order)"| ORD
-    PROD -.->|"1 : N (line item)"| ITEM
+    PROD -.->|"1 : N (added to)"| CITEM
+    PROD -.->|"1 : N (ordered as)"| ITEM
 
     %% Styling
     style P1 fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#93c5fd
@@ -54,6 +62,8 @@ flowchart LR
     style STR fill:#0f172a,stroke:#60a5fa,color:#f8fafc
     style INV fill:#0f172a,stroke:#34d399,color:#f8fafc
     style CUST fill:#0f172a,stroke:#fbbf24,color:#f8fafc
+    style CART fill:#0f172a,stroke:#f59e0b,color:#f8fafc
+    style CITEM fill:#0f172a,stroke:#f59e0b,color:#f8fafc
     style ORD fill:#0f172a,stroke:#fbbf24,color:#f8fafc
     style ITEM fill:#0f172a,stroke:#fbbf24,color:#f8fafc
 ```
@@ -71,11 +81,17 @@ erDiagram
     STORE ||--o{ STORE_INVENTORY : "maintains stock (1:N)"
     PRODUCT ||--o{ STORE_INVENTORY : "stocked in (1:N)"
 
+    %% Shopping Cart Persistence Relationships
+    CUSTOMER ||--o| CARTS : "owns active (1:1)"
+    STORE ||--o{ CARTS : "selected at (1:N)"
+    CARTS ||--o{ CART_ITEMS : "contains (1:N)"
+    PRODUCT ||--o{ CART_ITEMS : "added to (1:N)"
+
     %% Customer & Order Placement Relationships
     CUSTOMER ||--o{ ORDERS : "places (1:N)"
     STORE ||--o{ ORDERS : "fulfills (1:N)"
-    ORDERS ||--|{ ORDER_ITEM : "contains (1:N)"
-    PRODUCT ||--o{ ORDER_ITEM : "ordered in (1:N)"
+    ORDERS ||--|{ ORDER_ITEMS : "contains (1:N)"
+    PRODUCT ||--o{ ORDER_ITEMS : "ordered in (1:N)"
 
     CATEGORY {
         varchar id PK "Primary Key (e.g. CAT-ELEC)"
@@ -125,6 +141,22 @@ erDiagram
         timestamp created_at "Registration Timestamp"
     }
 
+    CARTS {
+        varchar id PK "Primary Key (e.g. CART-001)"
+        varchar customer_id FK "References CUSTOMER(id) UNIQUE"
+        varchar store_id FK "References STORE(id) for inventory check"
+        timestamp created_at "Cart Creation Timestamp"
+        timestamp updated_at "Last Activity Timestamp"
+    }
+
+    CART_ITEMS {
+        varchar id PK "Primary Key (e.g. CITEM-001)"
+        varchar cart_id FK "References CARTS(id) ON DELETE CASCADE"
+        varchar product_id FK "References PRODUCT(id) ON DELETE CASCADE"
+        int quantity "Selected Quantity (> 0)"
+        timestamp created_at "Addition Timestamp"
+    }
+
     ORDERS {
         varchar id PK "Primary Key (e.g. ORD-001)"
         varchar order_number UK "Business Number (e.g. ORD-20261004-101)"
@@ -137,7 +169,7 @@ erDiagram
         timestamp updated_at "Status Last Updated"
     }
 
-    ORDER_ITEM {
+    ORDER_ITEMS {
         varchar id PK "Primary Key (e.g. ITEM-001)"
         varchar order_id FK "References ORDERS(id) ON DELETE CASCADE"
         varchar product_id FK "References PRODUCT(id)"
@@ -151,15 +183,15 @@ erDiagram
 
 ## 3. End-to-End Business Flow Walkthrough
 
-The schema is organized to support a seamless, 4-step omnichannel lifecycle:
+The schema is organized to support a seamless, 5-step omnichannel lifecycle:
 
 ```
-[1. Master Setup]          [2. Stock Allocation]         [3. Customer Order]         [4. Order Fulfillment]
-CATEGORY ──► PRODUCT ──┐                                                              
-                       ├──► STORE_INVENTORY ◄── STORE ◄─── CUSTOMER ──► ORDERS ──► ORDER_ITEMS
-                       │                         │                         ▲              │
-                       │                         └─────────────────────────┘              ▼
-                       └─────────────────────────────────────────────────────────────► (Snapshot Price)
+[1. Catalog Setup]       [2. Store Stock Mapping]       [3. Persistent Cart]       [4. Atomic Checkout]      [5. Store Fulfillment]
+CATEGORY ──► PRODUCT ──┐                                                                                     
+                       ├──► STORE_INVENTORY ◄── STORE ◄─── CUSTOMER ──► CARTS ──► ORDERS ──► ORDER_ITEMS   
+                       │                          │                       │         ▲            │           
+                       │                          └───────────────────────┴─────────┘            ▼           
+                       └───────────────────────────────────────────────────────────────────► (Snapshot Price)
 ```
 
 1. **Step 1: Catalog & Location Setup (Phase 1):**
@@ -170,12 +202,17 @@ CATEGORY ──► PRODUCT ──┐
    - Stock is decoupled from `PRODUCT` and mapped through `STORE_INVENTORY` using composite uniqueness on `(store_id, product_id)`.
    - Each physical store tracks its own `quantity_available` (for new sales) and `quantity_reserved` (for confirmed orders).
 
-3. **Step 3: Customer Checkout & Atomic Stock Lock (Phase 3):**
+3. **Step 3: Multi-Device Persistent Cart (Phase 3):**
+   - A `CUSTOMER` adds items to their shopping basket, stored in `CARTS` and `CART_ITEMS`.
+   - Persisting active carts in PostgreSQL guarantees cross-device sync (e.g. user adds items on mobile, finishes on web).
+
+4. **Step 4: Customer Checkout & Atomic Stock Lock (Phase 3):**
    - A `CUSTOMER` selects a fulfillment store and checks out.
    - An `ORDERS` record is created with `store_id` (fulfillment store) and `customer_id`.
    - Stock in `STORE_INVENTORY` is atomically decremented: `quantity_available -= qty`, `quantity_reserved += qty`.
+   - Cart line items are cleared upon successful order creation.
 
-4. **Step 4: Order Line Items & Fulfillment (Phase 3):**
+5. **Step 5: Order Line Items & Fulfillment (Phase 3):**
    - `ORDER_ITEMS` snapshot the exact `unit_price` at the moment of order placement.
    - Store operators at `STORE` fulfill the order through the state machine:
      `CONFIRMED` $\rightarrow$ `PROCESSING` (picking) $\rightarrow$ `READY_FOR_PICKUP` (packed) $\rightarrow$ `COMPLETED` (collected).
@@ -217,6 +254,16 @@ CATEGORY ──► PRODUCT ──┐
 | | `email` | VARCHAR(150) | UNIQUE, NOT NULL | Account email address |
 | | `phone` | VARCHAR(20) | | Contact number |
 | | `address` | VARCHAR(255) | | Delivery address |
+| **`carts`** | `id` | VARCHAR(50) | PRIMARY KEY | Cart identifier (e.g., `CART-001`) |
+| | `customer_id` | VARCHAR(50) | UNIQUE, FK $\rightarrow$ `customers(id)` | 1 active shopping cart per customer |
+| | `store_id` | VARCHAR(50) | FK $\rightarrow$ `stores(id)` | Selected store for stock verification |
+| | `created_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Cart creation time |
+| | `updated_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Last modification time |
+| **`cart_items`** | `id` | VARCHAR(50) | PRIMARY KEY | Line item identifier (e.g., `CITEM-001`) |
+| | `cart_id` | VARCHAR(50) | FK $\rightarrow$ `carts(id)` | Parent shopping cart (ON DELETE CASCADE) |
+| | `product_id` | VARCHAR(50) | FK $\rightarrow$ `products(id)` | Product added to basket (ON DELETE CASCADE) |
+| | `quantity` | INT | NOT NULL, CHECK $> 0$ | Selected quantity |
+| | *Constraint* | `uq_cart_product` | UNIQUE(`cart_id`, `product_id`) | Ensures 1 row per product per cart |
 | **`orders`** | `id` | VARCHAR(50) | PRIMARY KEY | Order ID (e.g., `ORD-E1FDDA7A`) |
 | | `order_number`| VARCHAR(50) | UNIQUE, NOT NULL | User-friendly number (`ORD-20261004-9446`) |
 | | `customer_id` | VARCHAR(50) | FK $\rightarrow$ `customers(id)` | Placing customer |

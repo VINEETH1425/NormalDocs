@@ -186,3 +186,4 @@ classDiagram
 2. **Inventory has `reservedQuantity`** – `availableQuantity = quantity - reservedQuantity`. This allows checking availability vs. committed stock.
 3. **OrderStatus is an enum with valid transitions** – The `canTransitionTo()` method enforces the state machine (`CREATED → CONFIRMED → PROCESSING → READY → DELIVERED | CANCELLED`).
 4. **Cart is 1:1 with Customer** – Each customer has exactly one active cart.
+5. **Relational Database Parity** – `Cart` and `CartItem` map directly to `carts` and `cart_items` in the relational schema for cross-device persistence.

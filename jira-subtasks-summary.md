@@ -131,7 +131,7 @@ Sprint 1 foundation is complete and sets the baseline for Sprint 2 (Spring Boot 
 - **Summary:** `ST-DB-01: Document Relational Database Schema & Fields Specification`
 - **Description:**
   ```markdown
-  Produce a comprehensive database specification document detailing all 7 relational tables, column data types, nullability, primary/foreign keys, check constraints, default values, indexing strategy, and secondary NoSQL MongoDB audit schema.
+  Produce a comprehensive database specification document detailing all 9 relational tables (including Carts and Cart Items for persistent basket state), column data types, nullability, primary/foreign keys, check constraints, default values, indexing strategy, and secondary NoSQL MongoDB audit schema.
   ```
 - **Bitbucket Comment:**
   ```markdown
@@ -149,7 +149,7 @@ Sprint 1 foundation is complete and sets the baseline for Sprint 2 (Spring Boot 
 - **Summary:** `ST-DB-02: Establish Confirmed Seed Data & Data Dictionary Samples`
 - **Description:**
   ```markdown
-  Finalize and document the confirmed dataset for StoreConnect: 5 physical stores, 4 retail categories, 12 products, 60 inventory rows (with store-level variance), 5 customers, and 4 sample orders demonstrating lifecycle states.
+  Finalize and document the confirmed dataset for StoreConnect: 5 physical stores, 4 retail categories, 12 products, 60 inventory rows (with store-level variance), 5 customers, 1 active shopping cart with items, and 4 sample orders demonstrating lifecycle states.
   ```
 - **Bitbucket Comment:**
   ```markdown

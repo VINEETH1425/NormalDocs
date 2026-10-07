@@ -154,9 +154,11 @@
             <a href="#sec-state" class="nav-pill">3. State Machine</a>
             <a href="#sec-erd-flow" class="nav-pill">4a. ER Flow Architecture</a>
             <a href="#sec-erd" class="nav-pill">4b. Relational ERD</a>
+            <a href="#sec-traditional-erd" class="nav-pill">4c. Traditional ERD (Peter Chen)</a>
         </div>
 
         <div class="metric-ribbon">
+            <div class="metric-item"><strong>9</strong> Database Tables</div>
             <div class="metric-item"><strong>5</strong> Stores (Delhi-NCR)</div>
             <div class="metric-item"><strong>4</strong> Categories</div>
             <div class="metric-item"><strong>12</strong> Products</div>
@@ -513,7 +515,7 @@ stateDiagram-v2
         <div class="diagram-section" id="sec-erd-flow">
             <span class="badge badge-erd">DATABASE ARCHITECTURE</span>
             <h2>4a. Entity Relationship Flow Architecture</h2>
-            <p class="desc">Three-phase operational flow: Master Catalog & Stores → Store Inventory Bridge → Customer Orders & Line Items.</p>
+            <p class="desc">Three-phase operational flow: Master Catalog & Stores → Store Inventory Bridge → Customer Shopping Cart, Orders & Line Items.</p>
             <div class="mermaid">
 flowchart LR
     subgraph P1["PHASE 1: Master Catalog & Stores"]
@@ -529,35 +531,47 @@ flowchart LR
         INV["<b>STORE_INVENTORY</b><br/>🔑 id (PK)<br/>🔗 store_id (FK)<br/>🔗 product_id (FK)<br/>• quantity_available<br/>• quantity_reserved<br/>• reorder_threshold"]
     end
 
-    subgraph P3["PHASE 3: Customer Orders & Fulfillment"]
+    subgraph P3["PHASE 3: Customer Basket & Orders"]
         direction TB
         CUST["<b>CUSTOMERS</b><br/>🔑 id (PK)<br/>• email (UK)<br/>• first_name<br/>• last_name<br/>• phone"]
+        CART["<b>CARTS</b><br/>🔑 id (PK)<br/>🔗 customer_id (FK, UK)<br/>🔗 store_id (FK)<br/>• updated_at"]
+        CITEM["<b>CART_ITEMS</b><br/>🔑 id (PK)<br/>🔗 cart_id (FK)<br/>🔗 product_id (FK)<br/>• quantity"]
         ORD["<b>ORDERS</b><br/>🔑 id (PK)<br/>• order_number (UK)<br/>🔗 customer_id (FK)<br/>🔗 store_id (FK)<br/>• status<br/>• fulfillment_type<br/>• total_amount"]
         ITEM["<b>ORDER_ITEMS</b><br/>🔑 id (PK)<br/>🔗 order_id (FK)<br/>🔗 product_id (FK)<br/>• quantity<br/>• unit_price<br/>• subtotal"]
+        
+        CUST -->|"1 : 1 (owns active)"| CART
+        CART -->|"1 : N (contains)"| CITEM
+        CART -->|"converts on checkout"| ORD
         CUST -->|"1 : N (places)"| ORD
         ORD -->|"1 : N (contains)"| ITEM
     end
 
     PROD -->|"1 : N (stocked as)"| INV
     STR -->|"1 : N (maintains)"| INV
+    STR -.->|"1 : N (selected at)"| CART
     STR -.->|"1 : N (fulfills order)"| ORD
-    PROD -.->|"1 : N (line item)"| ITEM
+    PROD -.->|"1 : N (added to)"| CITEM
+    PROD -.->|"1 : N (ordered as)"| ITEM
             </div>
         </div>
 
         <div class="diagram-section" id="sec-erd">
             <span class="badge badge-erd">ENTITY RELATIONSHIP DIAGRAM (ERD)</span>
             <h2>4b. Relational Database Model (ERD)</h2>
-            <p class="desc">Database schema entities, primary keys (PK), foreign keys (FK), and 1:N cardinalities for PostgreSQL / ANSI SQL persistence.</p>
+            <p class="desc">Database schema entities, primary keys (PK), foreign keys (FK), and cardinalities (1:1, 1:N, M:N) for PostgreSQL persistence across 9 normalized tables.</p>
             <div class="mermaid">
 erDiagram
     CATEGORY ||--o{ PRODUCT : "contains (1:N)"
     STORE ||--o{ STORE_INVENTORY : "maintains stock (1:N)"
     PRODUCT ||--o{ STORE_INVENTORY : "stocked in (1:N)"
+    CUSTOMER ||--o| CARTS : "owns active (1:1)"
+    STORE ||--o{ CARTS : "selected at (1:N)"
+    CARTS ||--o{ CART_ITEMS : "contains (1:N)"
+    PRODUCT ||--o{ CART_ITEMS : "added to (1:N)"
     CUSTOMER ||--o{ ORDERS : "places (1:N)"
     STORE ||--o{ ORDERS : "fulfills (1:N)"
-    ORDERS ||--|{ ORDER_ITEM : "contains (1:N)"
-    PRODUCT ||--o{ ORDER_ITEM : "ordered in (1:N)"
+    ORDERS ||--|{ ORDER_ITEMS : "contains (1:N)"
+    PRODUCT ||--o{ ORDER_ITEMS : "ordered in (1:N)"
 
     CATEGORY {
         varchar id PK
@@ -602,6 +616,22 @@ erDiagram
         varchar address
     }
 
+    CARTS {
+        varchar id PK
+        varchar customer_id FK
+        varchar store_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    CART_ITEMS {
+        varchar id PK
+        varchar cart_id FK
+        varchar product_id FK
+        int quantity
+        timestamp created_at
+    }
+
     ORDERS {
         varchar id PK
         varchar order_number UK
@@ -612,7 +642,7 @@ erDiagram
         decimal total_amount
     }
 
-    ORDER_ITEM {
+    ORDER_ITEMS {
         varchar id PK
         varchar order_id FK
         varchar product_id FK
@@ -626,8 +656,232 @@ erDiagram
                 <ul style="margin-left: 20px; margin-top: 6px; line-height: 1.6;">
                     <li><strong>Store-Level Stock:</strong> Inventory is maintained by <code>(store_id, product_id)</code> with a unique constraint, preventing centralized stock discrepancies.</li>
                     <li><strong>Oversell Prevention:</strong> <code>quantity_available >= 0</code> check constraint ensures atomic reservation at the database level.</li>
+                    <li><strong>Persistent Shopping Cart:</strong> Active carts and line items are stored in <code>CARTS</code> and <code>CART_ITEMS</code> with a 1:1 customer constraint, enabling cross-device sync.</li>
                     <li><strong>Order Attribution:</strong> Every order links to both a <code>customer_id</code> and a fulfilling <code>store_id</code> for localized pickup/delivery.</li>
-                    <li><strong>Historical Accuracy:</strong> <code>ORDER_ITEM</code> captures the purchased <code>unit_price</code> snapshot independently of future catalog price changes.</li>
+                    <li><strong>Historical Accuracy:</strong> <code>ORDER_ITEMS</code> captures the purchased <code>unit_price</code> snapshot independently of future catalog price changes.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="diagram-section" id="sec-traditional-erd">
+            <span class="badge badge-erd">TRADITIONAL CHEN ER MODEL</span>
+            <h2>4c. Traditional Entity-Relationship Diagram (Peter Chen Notation)</h2>
+            <p class="desc">Standard conceptual ER diagram following the GeeksforGeeks DBMS model: Rectangles (Entities), 4-Sided Diamonds (Relationships - zero hexagons), Ellipses (Attributes), and Cardinalities (1:1, 1:N, M:N).</p>
+            
+            <h3 style="color:#93c5fd; margin-bottom: 12px; font-size: 1.15rem;">Global Entity-Relationship Backbone</h3>
+            <div class="mermaid">
+flowchart TD
+    %% Entities
+    CAT["CATEGORY"]
+    PROD["PRODUCT"]
+    STR["STORE"]
+    INV[["STORE_INVENTORY\n(Associative Entity)"]]
+    CUST["CUSTOMER"]
+    CART["CARTS"]
+    CITEM[["CART_ITEMS\n(Weak Entity)"]]
+    ORD["ORDERS"]
+    OITEM[["ORDER_ITEMS\n(Weak Entity)"]]
+
+    %% Relationships (All 4-Sided Diamonds - No Hexagons)
+    R_CAT_PROD{"Categorized_In\n(1:N)"}
+    R_STR_INV{"Maintains\n(1:N)"}
+    R_PROD_INV{"Stocks\n(1:N)"}
+    R_CUST_CART{"Owns\n(1:1)"}
+    R_CART_STR{"Selects_Store\n(N:1)"}
+    R_CART_ITEM{"Holds\n(1:N)\n[Identifying]"}
+    R_ITEM_PROD{"Includes\n(N:1)"}
+    R_CUST_ORD{"Places\n(1:N)"}
+    R_STR_ORD{"Fulfills\n(1:N)"}
+    R_ORD_ITEM{"Contains\n(1:N)\n[Identifying]"}
+    R_OITEM_PROD{"References\n(N:1)"}
+
+    %% Connectors
+    CAT ---|"1"| R_CAT_PROD ===|"N (Total)"| PROD
+    STR ---|"1"| R_STR_INV ===|"N (Total)"| INV
+    PROD ---|"1"| R_PROD_INV ===|"N (Total)"| INV
+    CUST ---|"1"| R_CUST_CART ===|"1 (Total)"| CART
+    CART ---|"N"| R_CART_STR ---|"1"| STR
+    CART ===|"1 (Total)"| R_CART_ITEM ===|"N (Total)"| CITEM
+    CITEM ---|"N"| R_ITEM_PROD ---|"1"| PROD
+    CUST ---|"1"| R_CUST_ORD ===|"N (Total)"| ORD
+    STR ---|"1"| R_STR_ORD ===|"N (Total)"| ORD
+    ORD ===|"1 (Total)"| R_ORD_ITEM ===|"N (Total)"| OITEM
+    OITEM ---|"N"| R_OITEM_PROD ---|"1"| PROD
+
+    style CAT fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style PROD fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style STR fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style CUST fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style CART fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style ORD fill:#1e40af,stroke:#60a5fa,color:#ffffff
+
+    style INV fill:#065f46,stroke:#34d399,stroke-width:3px,color:#ffffff
+    style CITEM fill:#065f46,stroke:#34d399,stroke-width:3px,color:#ffffff
+    style OITEM fill:#065f46,stroke:#34d399,stroke-width:3px,color:#ffffff
+
+    style R_CAT_PROD fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_STR_INV fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_PROD_INV fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_CUST_CART fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_CART_STR fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_ITEM_PROD fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_CUST_ORD fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_STR_ORD fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_OITEM_PROD fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_CART_ITEM fill:#991b1b,stroke:#f87171,color:#ffffff
+    style R_ORD_ITEM fill:#991b1b,stroke:#f87171,color:#ffffff
+            </div>
+
+            <h3 style="color:#93c5fd; margin-top: 32px; margin-bottom: 12px; font-size: 1.15rem;">Subsystem 1: Master Catalog, Stores & Inventory Attributes</h3>
+            <div class="mermaid">
+flowchart TD
+    CAT["CATEGORY"]
+    PROD["PRODUCT"]
+    STR["STORE"]
+    INV[["STORE_INVENTORY"]]
+
+    R_CAT_PROD{"Categorized_In\n(1:N)"}
+    R_STR_INV{"Maintains\n(1:N)"}
+    R_PROD_INV{"Stocks\n(1:N)"}
+
+    A_CAT_ID(["<u>id (PK)</u>"]) --- CAT
+    A_CAT_NM(["name"]) --- CAT
+    A_CAT_DS(["description"]) --- CAT
+
+    A_PROD_ID(["<u>id (PK)</u>"]) --- PROD
+    A_PROD_SKU(["sku (UK)"]) --- PROD
+    A_PROD_NM(["name"]) --- PROD
+    A_PROD_PR(["price"]) --- PROD
+    A_PROD_DS(["description"]) --- PROD
+    A_PROD_ACT(["is_active"]) --- PROD
+    A_PROD_CR(["created_at"]) --- PROD
+
+    A_STR_ID(["<u>id (PK)</u>"]) --- STR
+    A_STR_CD(["code (UK)"]) --- STR
+    A_STR_NM(["name"]) --- STR
+    A_STR_CT(["city"]) --- STR
+    A_STR_AD(["address"]) --- STR
+    A_STR_PH((("phone (Multi)"))) --- STR
+    A_STR_ACT(["is_active"]) --- STR
+    A_STR_CR(["created_at"]) --- STR
+
+    A_INV_ID(["<u>id (PK)</u>"]) --- INV
+    A_INV_AV(["quantity_available"]) --- INV
+    A_INV_RS(["quantity_reserved"]) --- INV
+    A_INV_TH(["reorder_threshold"]) --- INV
+    A_INV_UP(["updated_at"]) --- INV
+
+    CAT ---|"1"| R_CAT_PROD ---|"N"| PROD
+    STR ---|"1"| R_STR_INV ---|"N"| INV
+    PROD ---|"1"| R_PROD_INV ---|"N"| INV
+
+    style CAT fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style PROD fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style STR fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style INV fill:#065f46,stroke:#34d399,color:#ffffff
+    style R_CAT_PROD fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_STR_INV fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_PROD_INV fill:#b45309,stroke:#fbbf24,color:#ffffff
+            </div>
+
+            <h3 style="color:#93c5fd; margin-top: 32px; margin-bottom: 12px; font-size: 1.15rem;">Subsystem 2: Customer & Shopping Cart Attributes</h3>
+            <div class="mermaid">
+flowchart TD
+    CUST["CUSTOMER"]
+    CART["CARTS"]
+    CITEM[["CART_ITEMS"]]
+    PROD["PRODUCT"]
+
+    R_CUST_CART{"Owns\n(1:1)"}
+    R_CART_ITEM{"Holds\n(1:N)\n[Identifying]"}
+    R_ITEM_PROD{"Includes\n(N:1)"}
+
+    A_C_ID(["<u>id (PK)</u>"]) --- CUST
+    A_C_EM(["email (UK)"]) --- CUST
+    A_C_NM(["Name (Composite)"]) --- CUST
+    A_C_FN(["first_name"]) --- A_C_NM
+    A_C_LN(["last_name"]) --- A_C_NM
+    A_C_PH((("phone (Multi)"))) --- CUST
+    A_C_AD(["address"]) --- CUST
+    A_C_CR(["created_at"]) --- CUST
+
+    A_CRT_ID(["<u>id (PK)</u>"]) --- CART
+    A_CRT_CR(["created_at"]) --- CART
+    A_CRT_UP(["updated_at"]) --- CART
+
+    A_CI_ID(["-.- id (Partial Key) -.-"]) --- CITEM
+    A_CI_QT(["quantity"]) --- CITEM
+    A_CI_CR(["created_at"]) --- CITEM
+
+    A_P_REF(["<u>id (PK)</u>"]) --- PROD
+
+    CUST ---|"1"| R_CUST_CART ---|"1"| CART
+    CART ===|"1"| R_CART_ITEM ===|"N"| CITEM
+    CITEM ---|"N"| R_ITEM_PROD ---|"1"| PROD
+
+    style CUST fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style CART fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style CITEM fill:#065f46,stroke:#34d399,color:#ffffff
+    style PROD fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style R_CUST_CART fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_CART_ITEM fill:#991b1b,stroke:#f87171,color:#ffffff
+    style R_ITEM_PROD fill:#b45309,stroke:#fbbf24,color:#ffffff
+            </div>
+
+            <h3 style="color:#93c5fd; margin-top: 32px; margin-bottom: 12px; font-size: 1.15rem;">Subsystem 3: Orders, Items & Store Fulfillment Attributes</h3>
+            <div class="mermaid">
+flowchart TD
+    CUST["CUSTOMER"]
+    ORD["ORDERS"]
+    OITEM[["ORDER_ITEMS"]]
+    STR["STORE"]
+    PROD["PRODUCT"]
+
+    R_CUST_ORD{"Places\n(1:N)"}
+    R_STR_ORD{"Fulfills\n(1:N)"}
+    R_ORD_ITEM{"Contains\n(1:N)\n[Identifying]"}
+    R_OITEM_PROD{"References\n(N:1)"}
+
+    A_ORD_ID(["<u>id (PK)</u>"]) --- ORD
+    A_ORD_NO(["order_number (UK)"]) --- ORD
+    A_ORD_ST(["status"]) --- ORD
+    A_ORD_FT(["fulfillment_type"]) --- ORD
+    A_ORD_TOT[/"- - total_amount (Derived) - -"/] --- ORD
+    A_ORD_CR(["created_at"]) --- ORD
+    A_ORD_UP(["updated_at"]) --- ORD
+
+    A_OI_ID(["-.- id (Partial Key) -.-"]) --- OITEM
+    A_OI_QT(["quantity"]) --- OITEM
+    A_OI_PR(["unit_price (Snapshot)"]) --- OITEM
+    A_OI_SUB[/"- - subtotal (Derived) - -"/] --- OITEM
+
+    CUST ---|"1"| R_CUST_ORD ---|"N"| ORD
+    STR ---|"1"| R_STR_ORD ---|"N"| ORD
+    ORD ===|"1"| R_ORD_ITEM ===|"N"| OITEM
+    OITEM ---|"N"| R_OITEM_PROD ---|"1"| PROD
+
+    style CUST fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style ORD fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style STR fill:#1e40af,stroke:#60a5fa,color:#ffffff
+    style OITEM fill:#065f46,stroke:#34d399,color:#ffffff
+    style PROD fill:#1e40af,stroke:#60a5fa,color:#ffffff
+
+    style R_CUST_ORD fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_STR_ORD fill:#b45309,stroke:#fbbf24,color:#ffffff
+    style R_ORD_ITEM fill:#991b1b,stroke:#f87171,color:#ffffff
+    style R_OITEM_PROD fill:#b45309,stroke:#fbbf24,color:#ffffff
+            </div>
+
+            <div class="section-note" style="margin-top: 24px;">
+                <strong>GeeksforGeeks Peter Chen Notation Rules:</strong>
+                <ul style="margin-left: 20px; margin-top: 6px; line-height: 1.6;">
+                    <li><strong>▭ Single Rectangle:</strong> Strong Entity (independent primary key, e.g. <code>CUSTOMER</code>, <code>PRODUCT</code>).</li>
+                    <li><strong>⧉ Double Rectangle:</strong> Weak Entity (depends on owner entity, e.g. <code>ORDER_ITEMS</code>, <code>CART_ITEMS</code>).</li>
+                    <li><strong>⬡ Diamond:</strong> Relationship set (e.g. <code>PLACES</code>, <code>STOCKS</code>, <code>FULFILLS</code>). <em>Never drawn as a hexagon!</em></li>
+                    <li><strong>⬭ Ellipse with Underline:</strong> Primary Key attribute (e.g. <code><u>id</u></code>).</li>
+                    <li><strong>◌ Dashed Ellipse:</strong> Derived attribute (e.g. <code>total_amount</code>, <code>subtotal</code>).</li>
+                    <li><strong>⬭⬭ Double Ellipse:</strong> Multivalued attribute (e.g. <code>phone</code>).</li>
+                    <li><strong>══ Double Line:</strong> Total participation constraint.</li>
                 </ul>
             </div>
         </div>

@@ -9,15 +9,17 @@
 
 ## 1. Schema Overview
 
-The StoreConnect relational model bridges physical retail stores with digital commerce. The schema is normalized into 7 tables with strict check constraints, foreign keys, and indexes to enforce data integrity and prevent overselling.
+The StoreConnect relational model bridges physical retail stores with digital commerce. The schema is normalized into 9 tables with strict check constraints, foreign keys, and indexes to enforce data integrity, provide multi-device cart persistence, and prevent overselling.
 
 ```
-[Master Data]                [Inventory Bridge]             [Transactional Flow]
-categories ──► products ──┐                                                     
-                          ├──► store_inventory ◄── stores ◄─── customers ──► orders ──► order_items
-                          │                          │                          ▲              │
-                          │                          └──────────────────────────┘              ▼
-                          └────────────────────────────────────────────────────────────── (Snapshot Price)
+[Master Data]                [Inventory Bridge]             [Persistent Cart]             [Transactional Flow]
+categories ──► products ──┐                                                               
+                          ├──► store_inventory ◄── stores ◄─── customers ──► carts ──► orders ──► order_items
+                          │                          │                     │    │        ▲            │
+                          │                          └─────────────────────┼────┴────────┘            ▼
+                          │                                                ▼                   (Snapshot Price)
+                          │                                           cart_items ◄── (Active items)
+                          └────────────────────────────────────────────────┘
 ```
 
 ---
@@ -98,7 +100,34 @@ Registered customer accounts eligible for omnichannel ordering and order trackin
 
 ---
 
-### 2.6 Table: `orders`
+### 2.6 Table: `carts`
+Stores the active shopping basket for each customer. Enforces a 1:1 relationship with customers and links to the selected store for real-time inventory validation.
+
+| Column Name | Data Type | Nullable | Key / Constraint | Default | Business Description |
+|:---|:---|:---:|:---:|:---:|:---|
+| `id` | VARCHAR(50) | NO | **PRIMARY KEY** | - | Unique cart ID (e.g. `CART-001`) |
+| `customer_id` | VARCHAR(50) | NO | **UNIQUE**, **FOREIGN KEY** $\rightarrow$ `customers(id)`<br/>`ON DELETE CASCADE` | - | Owning customer (enforces 1 active cart per customer) |
+| `store_id` | VARCHAR(50) | YES | **FOREIGN KEY** $\rightarrow$ `stores(id)`<br/>`ON DELETE SET NULL` | NULL | Preferred fulfillment store for stock checking |
+| `created_at` | TIMESTAMP | NO | - | `CURRENT_TIMESTAMP` | Cart initiation timestamp |
+| `updated_at` | TIMESTAMP | NO | - | `CURRENT_TIMESTAMP` | Last cart modification timestamp |
+
+---
+
+### 2.7 Table: `cart_items`
+Individual products and quantities currently placed inside the customer's active shopping cart.
+
+| Column Name | Data Type | Nullable | Key / Constraint | Default | Business Description |
+|:---|:---|:---:|:---:|:---:|:---|
+| `id` | VARCHAR(50) | NO | **PRIMARY KEY** | - | Cart line item ID (e.g. `CITEM-001`) |
+| `cart_id` | VARCHAR(50) | NO | **FOREIGN KEY** $\rightarrow$ `carts(id)`<br/>`ON DELETE CASCADE` | - | Parent shopping cart reference |
+| `product_id` | VARCHAR(50) | NO | **FOREIGN KEY** $\rightarrow$ `products(id)`<br/>`ON DELETE CASCADE` | - | Referenced catalog product |
+| `quantity` | INT | NO | `CHECK (quantity > 0)` | - | Quantity selected by customer |
+| `created_at` | TIMESTAMP | NO | - | `CURRENT_TIMESTAMP` | Time item was added to cart |
+| *Constraint* | `uq_cart_product` | NO | **UNIQUE** `(cart_id, product_id)` | - | Ensures one aggregated row per product per cart |
+
+---
+
+### 2.8 Table: `orders`
 The aggregate root for customer orders, associating customer demand with specific physical store fulfillment.
 
 | Column Name | Data Type | Nullable | Key / Constraint | Default | Business Description |
@@ -115,7 +144,7 @@ The aggregate root for customer orders, associating customer demand with specifi
 
 ---
 
-### 2.7 Table: `order_items`
+### 2.9 Table: `order_items`
 Individual product line items within an order.
 
 | Column Name | Data Type | Nullable | Key / Constraint | Default | Business Description |
@@ -137,6 +166,9 @@ To support rapid query response during customer browsing and store operator oper
 |:---|:---|:---|:---|
 | `idx_products_category` | `products` | `(category_id)` | Accelerates catalog filtering by retail category |
 | `idx_inventory_store_product` | `store_inventory` | `(store_id, product_id)` | Fast real-time store stock availability lookups |
+| `idx_carts_customer` | `carts` | `(customer_id)` | Fast lookup of active customer shopping cart |
+| `idx_cart_items_cart` | `cart_items` | `(cart_id)` | Rapid retrieval of line items inside a cart |
+| `idx_cart_items_product` | `cart_items` | `(product_id)` | Foreign key indexing for product removals/cascades |
 | `idx_orders_customer` | `orders` | `(customer_id)` | Speeds up "My Orders" customer order history |
 | `idx_orders_store` | `orders` | `(store_id)` | Optimizes store operator dashboard of incoming store orders |
 | `idx_orders_status` | `orders` | `(status)` | Supports store picking queues filtered by order state |

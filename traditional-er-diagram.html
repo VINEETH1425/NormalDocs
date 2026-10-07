@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoreConnect – Traditional ER Diagram (Peter Chen / GeeksforGeeks Standard)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 24px; }
+        
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { font-size: 1.6rem; font-weight: 700; color: #f8fafc; margin-bottom: 6px; letter-spacing: -0.02em; }
+        .header p { font-size: 0.95rem; color: #94a3b8; }
+        
+        .toolbar { display: flex; justify-content: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 22px; font-size: 14px; font-weight: 600; cursor: pointer;
+            border-radius: 8px; border: 1px solid rgba(255,255,255,0.12);
+            transition: all 0.2s ease;
+        }
+        .btn-primary { background: #2563eb; color: #fff; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-secondary { background: #1e293b; color: #cbd5e1; }
+        .btn-secondary:hover { background: #334155; color: #fff; }
+
+        .meta-strip {
+            display: flex; justify-content: center; gap: 24px;
+            margin-bottom: 20px; font-size: 0.85rem; color: #64748b;
+        }
+        .meta-item { display: flex; align-items: center; gap: 6px; }
+        .meta-item strong { color: #cbd5e1; }
+
+        .viewer-container {
+            background: #ffffff; border-radius: 12px;
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+            overflow: auto; border: 1px solid #334155;
+            max-height: 82vh; text-align: center; padding: 10px;
+        }
+        .diagram-img {
+            max-width: 100%; height: auto; display: block; margin: 0 auto;
+            background: #ffffff;
+        }
+        canvas {
+            display: none; background: #ffffff;
+        }
+
+        .footer-notes {
+            text-align: center; color: #64748b; font-size: 0.82rem; margin-top: 20px; line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>StoreConnect Omnichannel Retail Platform – Conceptual Schema</h1>
+    <p>Traditional Entity-Relationship Diagram (Peter Chen Notation · GeeksforGeeks DBMS Standard)</p>
+</div>
+
+<div class="meta-strip">
+    <div class="meta-item"><span>Entities:</span> <strong>9 (6 Strong, 3 Weak)</strong></div>
+    <div class="meta-item"><span>Attributes:</span> <strong>47 (All Accounted)</strong></div>
+    <div class="meta-item"><span>Relationships:</span> <strong>11 (2 Identifying, 9 Regular)</strong></div>
+    <div class="meta-item"><span>Format:</span> <strong>Clean Black & White / High DPI</strong></div>
+</div>
+
+<div class="toolbar">
+    <button class="btn btn-primary" onclick="downloadImage()">📥 Download High-Res PNG</button>
+    <button class="btn btn-secondary" onclick="toggleCanvasView()" id="toggleBtn">🔄 Switch to Dynamic Canvas</button>
+    <button class="btn btn-secondary" onclick="zoomActual()">🔍 Toggle Full Zoom (100%)</button>
+</div>
+
+<div class="viewer-container" id="viewer">
+    <!-- Single High-Res PNG Image -->
+    <img id="diagramImage" class="diagram-img" src="StoreConnect_Traditional_ER_Diagram.png" alt="StoreConnect Traditional ER Diagram">
+    <!-- Fallback / Interactive HTML5 Canvas (4000 x 2900) -->
+    <canvas id="c" width="4000" height="2900"></canvas>
+</div>
+
+<div class="footer-notes">
+    <p><strong>Standards Reference:</strong> Peter Chen (1976) · GeeksforGeeks DBMS Introduction to ER Model</p>
+    <p>Source Schema: <code>src/main/resources/schema.sql</code> | Target Documentation: <code>docs/traditional-er-diagram.md</code></p>
+</div>
+
+<script>
+const img = document.getElementById('diagramImage');
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let isCanvasActive = false;
+let isZoomed = false;
+
+function downloadImage() {
+    const a = document.createElement('a');
+    a.download = 'StoreConnect_Traditional_ER_Diagram.png';
+    a.href = 'StoreConnect_Traditional_ER_Diagram.png';
+    a.click();
+}
+
+function zoomActual() {
+    isZoomed = !isZoomed;
+    if (isZoomed) {
+        img.style.maxWidth = 'none';
+        img.style.width = '4000px';
+        if (canvas) canvas.style.maxWidth = 'none';
+    } else {
+        img.style.maxWidth = '100%';
+        img.style.width = 'auto';
+        if (canvas) canvas.style.maxWidth = '100%';
+    }
+}
+
+function toggleCanvasView() {
+    isCanvasActive = !isCanvasActive;
+    const btn = document.getElementById('toggleBtn');
+    if (isCanvasActive) {
+        img.style.display = 'none';
+        canvas.style.display = 'block';
+        btn.textContent = '🔄 Switch to Static Image';
+        renderCanvas();
+    } else {
+        img.style.display = 'block';
+        canvas.style.display = 'none';
+        btn.textContent = '🔄 Switch to Dynamic Canvas';
+    }
+}
+
+/* ===================================================================
+   CANVAS RENDERER (Exact Coordinate Synchronization)
+   =================================================================== */
+function renderCanvas() {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Helpers
+    function line(x1, y1, x2, y2, lw, double) {
+        ctx.strokeStyle = '#000000';
+        if (!double) {
+            ctx.lineWidth = lw || 2;
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        } else {
+            const dx = x2 - x1, dy = y2 - y1;
+            const len = Math.hypot(dx, dy) || 1;
+            const nx = (-dy / len) * 3.5, ny = (dx / len) * 3.5;
+            ctx.lineWidth = lw || 2;
+            ctx.beginPath(); ctx.moveTo(x1 + nx, y1 + ny); ctx.lineTo(x2 + nx, y2 + ny); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(x1 - nx, y1 - ny); ctx.lineTo(x2 - nx, y2 - ny); ctx.stroke();
+        }
+    }
+
+    function rect(cx, cy, w, h, label, weak) {
+        ctx.fillStyle = '#FFFFFF'; ctx.strokeStyle = '#000000'; ctx.lineWidth = 2;
+        if (weak) {
+            ctx.fillRect(cx - w/2 - 7, cy - h/2 - 7, w + 14, h + 14);
+            ctx.strokeRect(cx - w/2 - 7, cy - h/2 - 7, w + 14, h + 14);
+        }
+        ctx.fillRect(cx - w/2, cy - h/2, w, h);
+        ctx.strokeRect(cx - w/2, cy - h/2, w, h);
+        ctx.fillStyle = '#000000'; ctx.font = 'bold 20px Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(label, cx, cy);
+    }
+
+    function diamond(cx, cy, hw, hh, label, ident) {
+        function path(hw2, hh2) {
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - hh2); ctx.lineTo(cx + hw2, cy);
+            ctx.lineTo(cx, cy + hh2); ctx.lineTo(cx - hw2, cy); ctx.closePath();
+        }
+        ctx.fillStyle = '#FFFFFF'; ctx.strokeStyle = '#000000'; ctx.lineWidth = 2;
+        if (ident) { path(hw + 8, hh + 6); ctx.fill(); ctx.stroke(); }
+        path(hw, hh); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#000000'; ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        const parts = label.split('\n');
+        const lh = 16;
+        parts.forEach((p, i) => ctx.fillText(p, cx, cy - ((parts.length - 1) * lh / 2) + i * lh));
+    }
+
+    function oval(cx, cy, label, pk, derived, multi, partial) {
+        ctx.save();
+        ctx.font = '14px Arial';
+        const tw = ctx.measureText(label).width;
+        const rx = Math.max(tw / 2 + 18, 48);
+        const ry = 20;
+
+        ctx.fillStyle = '#FFFFFF'; ctx.strokeStyle = '#000000'; ctx.lineWidth = 2;
+        if (multi) {
+            ctx.beginPath(); ctx.ellipse(cx, cy, rx + 5, ry + 4, 0, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+        }
+        if (derived) ctx.setLineDash([6, 5]);
+        ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#000000'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(label, cx, cy);
+
+        if (pk) {
+            ctx.beginPath();
+            ctx.moveTo(cx - tw / 2, cy + 9); ctx.lineTo(cx + tw / 2, cy + 9);
+            ctx.lineWidth = 1.8; ctx.stroke();
+        } else if (partial) {
+            ctx.setLineDash([4, 3]);
+            ctx.beginPath();
+            ctx.moveTo(cx - tw / 2, cy + 9); ctx.lineTo(cx + tw / 2, cy + 9);
+            ctx.lineWidth = 1.8; ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        ctx.restore();
+    }
+
+    function card(px, py, text) {
+        ctx.save();
+        ctx.font = 'bold 17px Arial';
+        const tw = ctx.measureText(text).width;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(px - tw / 2 - 4, py - 10, tw + 8, 20);
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(text, px, py);
+        ctx.restore();
+    }
+
+    // Entities
+    const E = {
+        CAT:   { x: 600,  y: 620,  w: 220, h: 56, l: 'CATEGORY',        weak: false },
+        PROD:  { x: 1600, y: 620,  w: 220, h: 56, l: 'PRODUCT',         weak: false },
+        INV:   { x: 2650, y: 620,  w: 280, h: 56, l: 'STORE_INVENTORY', weak: true  },
+        STR:   { x: 3600, y: 620,  w: 200, h: 56, l: 'STORE',           weak: false },
+        CART:  { x: 950,  y: 1450, w: 200, h: 56, l: 'CARTS',           weak: false },
+        CUST:  { x: 2100, y: 1450, w: 230, h: 56, l: 'CUSTOMER',        weak: false },
+        ORD:   { x: 3250, y: 1450, w: 210, h: 56, l: 'ORDERS',          weak: false },
+        CI:    { x: 950,  y: 2350, w: 230, h: 56, l: 'CART_ITEMS',      weak: true  },
+        OI:    { x: 3250, y: 2350, w: 240, h: 56, l: 'ORDER_ITEMS',     weak: true  },
+    };
+
+    // Attributes
+    const A = {
+        CAT: [
+            { l: 'id', x: 420, y: 480, pk: true }, { l: 'name', x: 600, y: 460 }, { l: 'description', x: 780, y: 480 }
+        ],
+        PROD: [
+            { l: 'id', x: 1320, y: 380, pk: true }, { l: 'sku', x: 1500, y: 380 }, { l: 'name', x: 1680, y: 380 },
+            { l: 'price', x: 1860, y: 380 }, { l: 'description', x: 1410, y: 470 }, { l: 'is_active', x: 1600, y: 470 },
+            { l: 'created_at', x: 1790, y: 470 }
+        ],
+        INV: [
+            { l: 'id', x: 2360, y: 390, pk: true }, { l: 'quantity_available', x: 2650, y: 380 },
+            { l: 'quantity_reserved', x: 2940, y: 390 }, { l: 'reorder_threshold', x: 2480, y: 480 },
+            { l: 'updated_at', x: 2820, y: 480 }
+        ],
+        STR: [
+            { l: 'id', x: 3320, y: 390, pk: true }, { l: 'code', x: 3500, y: 380 }, { l: 'name', x: 3680, y: 380 },
+            { l: 'city', x: 3860, y: 390 }, { l: 'address', x: 3410, y: 480 }, { l: 'phone', x: 3590, y: 480, multi: true },
+            { l: 'is_active', x: 3770, y: 480 }, { l: 'created_at', x: 3950, y: 480 }
+        ],
+        CUST: [
+            { l: 'id', x: 1820, y: 1210, pk: true }, { l: 'first_name', x: 2010, y: 1200 },
+            { l: 'last_name', x: 2190, y: 1200 }, { l: 'email', x: 2380, y: 1210 },
+            { l: 'phone', x: 1920, y: 1300, multi: true }, { l: 'address', x: 2100, y: 1300 },
+            { l: 'created_at', x: 2280, y: 1300 }
+        ],
+        CART: [
+            { l: 'id', x: 680, y: 1370, pk: true }, { l: 'created_at', x: 660, y: 1450 }, { l: 'updated_at', x: 680, y: 1530 }
+        ],
+        ORD: [
+            { l: 'id', x: 3530, y: 1270, pk: true }, { l: 'order_number', x: 3750, y: 1270 },
+            { l: 'status', x: 3530, y: 1360 }, { l: 'fulfillment_type', x: 3770, y: 1360 },
+            { l: 'total_amount', x: 3540, y: 1450, derived: true }, { l: 'created_at', x: 3750, y: 1450 },
+            { l: 'updated_at', x: 3640, y: 1540 }
+        ],
+        CI: [
+            { l: 'id', x: 730, y: 2520, pk: true, partial: true }, { l: 'quantity', x: 950, y: 2520 }, { l: 'created_at', x: 1170, y: 2520 }
+        ],
+        OI: [
+            { l: 'id', x: 2960, y: 2520, pk: true, partial: true }, { l: 'quantity', x: 3150, y: 2520 },
+            { l: 'unit_price', x: 3340, y: 2520 }, { l: 'subtotal', x: 3530, y: 2520, derived: true }
+        ]
+    };
+
+    // Relationships
+    const R = [
+        { n: 'Categorized_In', x: 1100, y: 620, hw: 85, hh: 45, id: false, p1: [[710, 620], [1015, 620]], p2: [[1185, 620], [1490, 620]], c1: '1', c2: 'N', e2T: false, c1p: [740, 600], c2p: [1460, 600] },
+        { n: 'Stocks',         x: 2125, y: 620, hw: 80, hh: 45, id: false, p1: [[1710, 620], [2045, 620]], p2: [[2205, 620], [2510, 620]], c1: '1', c2: 'N', e2T: true,  c1p: [1740, 600], c2p: [2480, 600] },
+        { n: 'Maintains',      x: 3150, y: 620, hw: 80, hh: 45, id: false, p1: [[3500, 620], [3230, 620]], p2: [[3070, 620], [2790, 620]], c1: '1', c2: 'N', e2T: true,  c1p: [3470, 600], c2p: [2820, 600] },
+        { n: 'Owns',           x: 1525, y: 1450, hw: 75, hh: 45, id: false, p1: [[1985, 1450], [1600, 1450]], p2: [[1450, 1450], [1050, 1450]], c1: '1', c2: '1', e2T: true,  c1p: [1950, 1430], c2p: [1080, 1430] },
+        { n: 'Places',         x: 2675, y: 1450, hw: 75, hh: 45, id: false, p1: [[2215, 1450], [2600, 1450]], p2: [[2750, 1450], [3145, 1450]], c1: '1', c2: 'N', e2T: true,  c1p: [2245, 1430], c2p: [3115, 1430] },
+        { n: 'Fulfills',       x: 3440, y: 1035, hw: 80, hh: 45, id: false, p1: [[3565, 648], [3465, 990]],  p2: [[3415, 1080], [3305, 1422]], c1: '1', c2: 'N', e2T: true,  c1p: [3535, 710],  c2p: [3325, 1370] },
+        { n: 'Selects_Store',  x: 2275, y: 880,  hw: 90, hh: 45, id: false, p1: [[3500, 648], [2365, 880]],  p2: [[2185, 880], [1050, 1422]],  c1: '1', c2: 'N', e2T: false, c1p: [3460, 680],  c2p: [1090, 1390] },
+        { n: 'Holds',          x: 950,  y: 1900, hw: 80, hh: 45, id: true,  p1: [[950, 1478], [950, 1845]],  p2: [[950, 1955], [950, 2322]],  c1: '1', c2: 'N', e2T: true,  c1p: [925, 1530],  c2p: [925, 2270] },
+        { n: 'Contains',       x: 3250, y: 1900, hw: 80, hh: 45, id: true,  p1: [[3250, 1478], [3250, 1845]], p2: [[3250, 1955], [3250, 2322]], c1: '1', c2: 'N', e2T: true,  c1p: [3225, 1530], c2p: [3225, 2270] },
+        { n: 'Includes',       x: 1300, y: 1900, hw: 80, hh: 45, id: false, p1: [[1520, 648], [1300, 1100], [1300, 1855]], p2: [[1270, 1940], [1050, 2322]], c1: '1', c2: 'N', e2T: true, c1p: [1530, 710], c2p: [1100, 2290] },
+        { n: 'References',     x: 2420, y: 1900, hw: 85, hh: 45, id: false, p1: [[1680, 648], [2420, 1100], [2420, 1855]], p2: [[2490, 1935], [3150, 2322]], c1: '1', c2: 'N', e2T: true, c1p: [1720, 710], c2p: [3100, 2290] }
+    ];
+
+    // Layer 1: Lines
+    Object.keys(A).forEach(k => {
+        const ent = E[k];
+        A[k].forEach(a => line(ent.x, ent.y, a.x, a.y, 1));
+    });
+
+    R.forEach(r => {
+        for (let i = 0; i < r.p1.length - 1; i++) line(r.p1[i][0], r.p1[i][1], r.p1[i+1][0], r.p1[i+1][1], 2, false);
+        for (let i = 0; i < r.p2.length - 1; i++) line(r.p2[i][0], r.p2[i][1], r.p2[i+1][0], r.p2[i+1][1], 2, r.e2T);
+    });
+
+    // Layer 2: Attributes
+    Object.keys(A).forEach(k => {
+        A[k].forEach(a => oval(a.x, a.y, a.l, a.pk, a.derived, a.multi, a.partial));
+    });
+
+    // Layer 3: Relationships
+    R.forEach(r => diamond(r.x, r.y, r.hw, r.hh, r.n, r.id));
+
+    // Layer 4: Entities
+    Object.keys(E).forEach(k => {
+        const e = E[k];
+        rect(e.x, e.y, e.w, e.h, e.l, e.weak);
+    });
+
+    // Layer 5: Cardinalities
+    R.forEach(r => {
+        card(r.c1p[0], r.c1p[1], r.c1);
+        card(r.c2p[0], r.c2p[1], r.c2);
+    });
+}
+</script>
+</body>
+</html>

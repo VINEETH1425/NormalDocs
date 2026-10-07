@@ -92,7 +92,7 @@ Encapsulates store-level stock calculations and validation invariants.
 ---
 
 ### 2.3 Class: `Cart` and `CartItem`
-Models the pre-checkout customer basket in memory.
+Models the pre-checkout customer basket, mapped to the `carts` and `cart_items` relational tables in PostgreSQL for cross-device persistence.
 
 **`Cart` Fields:**
 - `private String customerId`
