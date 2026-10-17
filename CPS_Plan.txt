@@ -1,0 +1,9 @@
+see now whatever code which you have is I guess it is not useful,
+@ContextualProblemStatement_PSI-2026_Sept_ASDE_GGN_v2.pdf this is the file for problem statement. already which you read
+as there we need to use springboot and microservices.
+As we need to use 5 microservices : APIGateway, Store inventory, Order Service, Payment Service, and User Service. Somewhere we need to include this cart as well.
+I am not sure how the database works for it. Should I keep the same database for all the microservices or different this is also one of the main question. Which we need to decide.
+Also make sure that it will be simple for implementing.
+There is no required of UI right now , but the backend should be completely perfect.Also use java 25 whereever it is required. to reduce the complexity like using stream,etc
+CPS_ER_Diagram_Improved.png this is the file of ER diagram currently which I am following so you can use this for reference. And if you need something else you can ask me.
+First create a entire plan for implementing it. We need to use completely java springboot 4.1.1 all the dependencies like lombok,web, devtools, postresql, whatever you want you can add it in the dependencies and use it.

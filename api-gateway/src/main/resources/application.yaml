@@ -1,0 +1,77 @@
+server:
+  port: ${GATEWAY_PORT:8080}
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+      routes:
+        # 1. User Service routes (Auth, Customer Profile, Cart)
+        - id: user-auth
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**
+
+        - id: user-customers
+          uri: lb://user-service
+          predicates:
+            - Path=/api/customers/**
+
+        - id: user-cart
+          uri: lb://user-service
+          predicates:
+            - Path=/api/cart/**
+
+        # 2. Store-Inventory Service routes
+        - id: store-inventory-products
+          uri: lb://store-inventory-service
+          predicates:
+            - Path=/api/products/**
+
+        - id: store-inventory-categories
+          uri: lb://store-inventory-service
+          predicates:
+            - Path=/api/categories/**
+
+        - id: store-inventory-stores
+          uri: lb://store-inventory-service
+          predicates:
+            - Path=/api/stores/**
+
+        - id: store-inventory-stock
+          uri: lb://store-inventory-service
+          predicates:
+            - Path=/api/inventory/**
+
+        # 3. Order Service routes
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/orders/**
+
+        # 4. Payment Service routes
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/payments/**
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.loadbalancer: DEBUG
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    registry-fetch-interval-seconds: 3
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+
+jwt:
+  secret: ${JWT_SECRET:c3RvcmVjb25uZWN0LW1pY3Jvc2VydmljZXMtand0LXNlY3JldC1rZXktMjU2LWJpdHMtc2VjdXJl}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
