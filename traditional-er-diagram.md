@@ -5,6 +5,12 @@
 
 ---
 
+## Visual ER Diagram (Peter Chen / GeeksforGeeks Standard)
+
+![StoreConnect Traditional ER Diagram](StoreConnect_Traditional_ER_Diagram.png)
+
+---
+
 ## 1. Traditional ER Model Fundamentals (GeeksforGeeks Standard)
 
 In academic DBMS theory (Peter Chen Notation, 1976), an ER diagram models the conceptual schema using strict geometric shapes:
@@ -79,10 +85,18 @@ Every single attribute across all 9 entities is accounted for below with its exa
 
 ---
 
-## 3. Visual Traditional ER Diagrams (Peter Chen Standard)
+## 3. Visual Traditional ER Diagram (Master Image & Peter Chen Standard)
 
-### 3.1 Global Conceptual ER Backbone (Pure Entities & Diamonds)
-This clean schema view shows all 9 Entities (**Rectangles**) and 10 Relationships (**4-Sided Diamonds**, zero hexagons) with exact cardinalities (`1:1`, `1:N`, `M:N`) and participation constraints:
+### 3.1 Master Conceptual ER Diagram (Single High-Resolution Image)
+
+> 🖼️ **Master Output Image:** [`StoreConnect_Traditional_ER_Diagram.png`](file:///d:/PS_CPS_Project/docs/StoreConnect_Traditional_ER_Diagram.png)  
+> 🌐 **Interactive Browser Viewer:** [`traditional-er-diagram.html`](file:///d:/PS_CPS_Project/docs/traditional-er-diagram.html)  
+> 📐 **Standard Conformity:** 100% Peter Chen notation (GeeksforGeeks DBMS standard) covering **all 9 entities**, **all 47 attributes**, and **all 11 relationships** with primary keys underlined, multivalued attributes in double ovals, derived attributes in dashed ovals, weak entities in double rectangles, and identifying relationships in double diamonds.
+
+![StoreConnect Traditional ER Diagram](file:///d:/PS_CPS_Project/docs/StoreConnect_Traditional_ER_Diagram.png)
+
+### 3.2 Global Conceptual ER Backbone (Pure Entities & Diamonds)
+This clean schema view shows all 9 Entities (**Rectangles**) and 11 Relationships (**4-Sided Diamonds**, zero hexagons) with exact cardinalities (`1:1`, `1:N`, `M:N`) and participation constraints:
 
 ```mermaid
 flowchart TD

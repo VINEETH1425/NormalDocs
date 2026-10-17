@@ -1,83 +1,51 @@
-# StoreConnect – Problem Understanding, Scope & Architecture Foundation
+# StoreConnect – Problem Understanding & Provided Solution
 
-**Project Name:** StoreConnect – Omnichannel Retail Platform  
-**Batch:** PSI-2026 Sep ASDE GGN  
-**Checkpoint 1 Delivery Date:** Tuesday, Oct 7, 2026 (Sprint 1 Check-in)  
-**Final Capstone Demo:** Day 21  
+## 1. Problem Statement Understanding
 
----
+StoreConnect is an omnichannel retail system that connects customers, stores, products, inventory, carts, and orders into a single platform.
 
-## 1. Executive Summary & Problem Understanding
+The system mainly supports:
 
-### 1.1 The Retail Reality
-Traditional multi-channel retail organizations operate physical stores and online e-commerce channels as disconnected operational silos:
-1. **Disconnected Catalog & Inventory:** Online shoppers see products listed as "in stock", but the nearest store or fulfillment hub may be out of stock, leading to fulfillment failures, customer dissatisfaction, and high cancellation rates.
-2. **Lack of Store-Level Visibility:** Store floor associates have zero visibility into real-time online order commitments reserved against physical shelf inventory, causing accidental double-selling.
-3. **Manual & Fragile Order Lifecycle:** Status changes (such as order confirmation, picking, packing, dispatch, or customer pickup) are handled through disjointed manual steps without state machine enforcement, creating data inconsistency.
-4. **Audit Trail Blind Spots:** High-volume inventory state changes and order transitions lack centralized audit logging, making dispute resolution and inventory reconciliation difficult.
+- **Customer:** Browse products, check store-level availability, manage cart, place orders, and track order status.
+- **Store:** Maintain store information and manage inventory available at each store location.
+- **Product & Category:** Maintain a centralized product catalog with categories, pricing, and product details.
+- **Cart:** Allow customers to add products, manage quantities, and proceed towards checkout.
+- **Order:** Create and track customer orders with line items, quantities, prices, and fulfillment status.
+- **Inventory:** Maintain store-level stock, including available/reserved quantities and reorder thresholds.
+- **Fulfillment:** Support store operators in processing orders and moving them through valid fulfillment stages.
+- **Consistency:** Prevent overselling through stock reservation and ensure valid order status transitions.
+- **Auditability:** Maintain relevant timestamps and events so inventory and order changes can be tracked.
 
-### 1.2 The StoreConnect Solution
-**StoreConnect** creates a unified digital omnichannel retail platform that bridges the physical store network with digital commerce. It provides:
-- A unified product catalog with real-time, store-level inventory visibility.
-- Atomic stock reservations during checkout to prevent overselling.
-- A formalized order lifecycle state machine preventing invalid status transitions.
-- Operational fulfillment views for store operators to pick, pack, and mark orders ready for pickup or dispatch.
-- Event audit logging capturing critical order and inventory events.
+*Note: This represents the core understanding of the requirements. Any additional attributes or relationships required during subsequent iterations will be refined accordingly.*
 
 ---
 
-## 2. Target Personas & User Roles
+## 2. Provided Solution
 
-| Persona | Role | Primary Responsibilities & Journeys |
-|---------|------|-------------------------------------|
-| **Customer** | End User | Registers/logs in, browses catalog, filters by category, checks store-specific availability, manages cart, places orders, and tracks real-time status. |
-| **Store Operator** | Floor Associate | Monitors incoming orders assigned to their store, checks picking lists, updates fulfillment status (Confirm $\rightarrow$ Processing $\rightarrow$ Ready for Pickup), and updates local inventory levels. |
-| **Retail Administrator** | Backoffice Manager | Manages product catalog, creates categories, sets pricing, oversees multi-store inventory levels, and reviews audit logs. |
-| **System** | Automated Engine | Enforces transactional stock reservations, executes order state machine validation rules, and logs audit events. |
+To fulfill these requirements cleanly without unnecessary complexity, StoreConnect implements the following solution:
 
----
+1. **Centralized Catalog (Products & Categories):**
+   - Products and categories are stored in a central catalog so that names, SKUs, descriptions, and base prices remain consistent across all physical stores.
 
-## 3. Project Scope Boundaries
+2. **Store-Specific Inventory (`store_inventory`):**
+   - Stock is not stored globally on the product. Instead, each physical store maintains its own inventory record (`store_id` + `product_id`).
+   - Each inventory record tracks both `quantity_available` (shelf stock) and `quantity_reserved` (held for pending orders) to give customers accurate, real-time availability for their selected store.
 
-### In-Scope for Sprint 1 (Foundation & Data Layer – Checkpoint 1: Tuesday)
-- **Domain Modeling:** Complete Object-Oriented Domain Model in modern Java (Product, Category, Store, Inventory, Customer, Cart, Order, enums).
-- **Business Rule Enforcement:**
-  - Real-time store inventory validation before checkout.
-  - Transactional inventory deduction on order confirmation.
-  - Automatic stock restoration upon order cancellation.
-  - Formalized Order State Machine (`PENDING` $\rightarrow$ `CONFIRMED` $\rightarrow$ `PROCESSING` $\rightarrow$ `READY_FOR_PICKUP` $\rightarrow$ `COMPLETED` / `CANCELLED`).
-- **Core Persistence (PostgreSQL & JDBC):**
-  - Relational schema (`schema.sql`) with tables, primary keys, foreign keys, and indexes.
-  - Seed dataset (`seed_data.sql`) reflecting realistic Gurgaon/Delhi store locations and product catalog.
-  - Robust JDBC DAOs managing CRUD operations and transactional boundaries.
-- **NoSQL Audit Log (MongoDB):**
-  - Document-based event log capturing order state transitions and inventory updates.
-- **Quality & Automated Testing:**
-  - JUnit 5 test suite verifying business rules, inventory invariants, and state transitions.
-- **Runnable Live Demo:**
-  - A console demo runner showcasing the end-to-end customer order journey and store operator fulfillment live.
+3. **Persistent Shopping Cart:**
+   - Each customer has an active cart linked to their account and selected store. Items and quantities can be added, updated, or removed, and the total amount is automatically recalculated.
 
-### In-Scope for Later Sprints (Days 6–20)
-- **Sprint 2:** Spring Boot REST APIs, OpenAPI/Swagger docs, Layered Architecture, Microservice boundaries.
-- **Sprint 3:** Apache Kafka event integration (`OrderPlacedEvent`), React + TypeScript UI foundation.
-- **Sprint 4:** Redux Toolkit state management, full-stack integration, BDD Cucumber/Selenium automated tests.
+4. **Preventing Overselling (Atomic Reservation):**
+   - During checkout, the system validates stock for every cart item.
+   - Upon confirmation, stock is atomically moved from `quantity_available` to `quantity_reserved`. If any item does not have enough stock, the order is rejected immediately, preventing double-selling.
 
-### Explicit Scope Exclusions (As per CPS Guidelines)
-- ❌ Production Docker, Kubernetes, AWS deployments (expressly excluded by CPS prompt).
-- ❌ Python backend (to be handled during post-Day 21 refactor module).
-- ❌ Real third-party payment gateways, bank integrations, or POS hardware scanners.
-- ❌ External shipping courier APIs.
+5. **Clear Order Lifecycle & State Transitions:**
+   - Orders follow a strict, linear flow:  
+     `PENDING → CONFIRMED → PROCESSING → READY_FOR_PICKUP → COMPLETED` (or `CANCELLED`).
+   - If an order is cancelled, reserved inventory is automatically released back to `quantity_available`.
+   - When an order is completed, reserved inventory is marked as fulfilled.
 
----
+6. **Store Operator Fulfillment:**
+   - Store staff can view incoming orders assigned to their store, pick and pack items, and advance the order status until it is ready for customer pickup or dispatch.
 
-## 4. Key Architectural Decisions & Patterns
-
-1. **Layered Architecture:**
-   - `domain`: Encapsulates business entities, value objects, and domain invariants.
-   - `repository`: Data access interfaces and JDBC implementations.
-   - `service`: Orchestrates business workflows (catalog search, cart operations, transactional order placement).
-   - `audit`: MongoDB event logging for append-only audit trail.
-2. **State Machine Pattern:**
-   - Order transitions are guarded by an enum-driven state transition matrix. Any illegal transition throws an `IllegalStateException`.
-3. **Resilience & Dual Database Support:**
-   - The data layer is designed against standard ANSI SQL and PostgreSQL. A pluggable connection manager enables PostgreSQL execution while also supporting SQLite/in-memory mode for offline evaluation resilience.
+7. **Audit Trail & Event Logging:**
+   - Key business events (`ORDER_PLACED`, `ORDER_STATUS_CHANGED`, `INVENTORY_RESTORED`) and timestamps (`created_at`, `updated_at`) are captured so all stock adjustments and order changes can be audited and traced.
