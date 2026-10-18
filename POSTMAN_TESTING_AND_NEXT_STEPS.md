@@ -323,9 +323,32 @@ Call the stock check endpoint again to show real-time synchronization between se
 
 ---
 
+### Request 2.11: Check Payment Transaction for Order
+Once an order is created, `payment-service` records the payment transaction (triggered via Kafka `ORDER_PLACED` event or internal processing).
+
+* **Method**: `GET`
+* **URL**: `http://localhost:8080/api/payments/order/{orderId}`
+  *(Replace `{orderId}` with the ID from Request 2.8, e.g. `ORD-XXXXXX`)*
+* **Headers**:
+  * `Authorization`: `Bearer <CUSTOMER_TOKEN>`
+* **Expected Response (`200 OK`)**:
+```json
+{
+  "id": "PAY-XXXXXX",
+  "orderId": "ORD-XXXXXX",
+  "transactionId": "TXN-1729221234567-XXXXXX",
+  "amount": 29990.00,
+  "status": "SUCCESS",
+  "paymentMethod": "CREDIT_CARD",
+  "createdAt": "2026-10-18T11:45:00"
+}
+```
+
+---
+
 ## 4. Phase 3: Live PostgreSQL Database Verification
 
-To show the evaluator that data was committed across all database schemas, open PowerShell:
+To show the evaluator that data was committed across all 4 database schemas, open PowerShell:
 
 ```powershell
 $env:PGPASSWORD = "JaiShriRam321@"
@@ -335,32 +358,97 @@ $env:PGPASSWORD = "JaiShriRam321@"
 Run these SQL queries:
 
 ```sql
--- 1. Check newly registered customer
+-- 1. Check newly registered customer (user_schema)
 SELECT id, email, first_name, last_name, role, created_at 
 FROM user_schema.customers 
 ORDER BY created_at DESC LIMIT 1;
 
--- 2. Check placed order
+-- 2. Check customer shopping cart (user_schema)
+SELECT id, customer_id, store_id, updated_at 
+FROM user_schema.carts 
+ORDER BY updated_at DESC LIMIT 1;
+
+-- 3. Check placed BOPIS order (order_schema)
 SELECT id, order_number, customer_id, store_id, status, fulfillment_type, total_amount, created_at 
 FROM order_schema.orders 
 ORDER BY created_at DESC LIMIT 1;
 
--- 3. Check order items
+-- 4. Check order items (order_schema)
 SELECT id, order_id, product_id, quantity, unit_price, subtotal 
 FROM order_schema.order_items 
 ORDER BY id DESC LIMIT 1;
 
--- 4. Check store inventory stock update
+-- 5. Check real-time store stock reservation (inventory_schema)
 SELECT store_id, product_id, quantity_available, quantity_reserved, updated_at 
 FROM inventory_schema.store_inventory 
 WHERE store_id = 'STORE-GGN-01';
+
+-- 6. Check payment transaction ledger (payment_schema)
+SELECT id, order_id, transaction_id, amount, status, payment_method, created_at 
+FROM payment_schema.payments 
+ORDER BY created_at DESC LIMIT 1;
 ```
 
 ---
 
 ## 5. Summary of Architecture Points for Your Demo
 
-1. **All requests pass through Port 8080 (API Gateway)**: The gateway inspects the HMAC-SHA256 JWT, injects `X-User-Id` and `X-User-Role`, and routes via Netty non-blocking WebFlux event loops.
+1. **All requests pass through Port 8080 (API Gateway)**: The gateway inspects the HMAC-SHA256 JWT, injects `X-User-Id`, `X-User-Role`, and `X-User-Email`, and routes via Netty non-blocking WebFlux event loops.
 2. **Zero SQL Scripts Used**: Hibernate auto-generated the DDL tables, and all data was populated dynamically via standard REST APIs and Spring Data JPA.
 3. **Synchronous Stock Reservation**: `order-service` calls `store-inventory-service` using an OpenFeign declarative interface to ensure zero overselling.
-4. **Asynchronous Events**: Once the order is committed to PostgreSQL, an `ORDER_PLACED` event is broadcast to Kafka for transaction processing.
+4. **Asynchronous Events**: Once the order is committed to PostgreSQL, an `ORDER_PLACED` event is broadcast to Kafka for transaction ledger recording in `payment-service`.
+
+---
+
+## 6. Architecture Deep-Dive FAQ (Crucial Viva Concepts)
+
+### Q1: What is the purpose of `DiscoveryClient` when OpenFeign already exists? Where is it used?
+
+> **The Relationship**: OpenFeign and DiscoveryClient are not competitors; **OpenFeign depends directly on DiscoveryClient!**
+> 
+> When you declare a Feign client:
+> ```java
+> @FeignClient(name = "store-inventory-service")
+> public interface InventoryFeignClient { ... }
+> ```
+> 1. Look at `name = "store-inventory-service"`. Notice there is **no IP address and no port number**.
+> 2. `store-inventory-service` is **not** a valid DNS domain on your computer or the internet. If you try to send a raw HTTP request to `http://store-inventory-service`, Java will immediately throw `java.net.UnknownHostException`.
+> 3. **How does Feign know where to send the request?**  
+>    Under the hood, OpenFeign hands the logical name (`store-inventory-service`) to the **`DiscoveryClient`** (backed by Netflix Eureka & Spring Cloud LoadBalancer).
+> 4. `DiscoveryClient` queries Eureka's registry at port `8761` and resolves:  
+>    `store-inventory-service` $\rightarrow$ `http://127.0.0.1:8082`.
+> 5. OpenFeign replaces the logical name with the physical IP and port, executes the HTTP request, and load-balances across instances if multiple replicas are running.
+> 
+> **Where is it used?**  
+> - **In Spring Cloud Gateway**: Resolves `uri("lb://user-service")` in [GatewayRoutesConfig.java](file:///d:/PS_CPS_Project/api-gateway/src/main/java/com/storeconnect/gateway/config/GatewayRoutesConfig.java).
+> - **In OpenFeign**: Resolves `@FeignClient(name = "...")` in [InventoryFeignClient.java](file:///d:/PS_CPS_Project/order-service/src/main/java/com/storeconnect/order/feign/InventoryFeignClient.java) and [UserFeignClient.java](file:///d:/PS_CPS_Project/order-service/src/main/java/com/storeconnect/order/feign/UserFeignClient.java).
+> - **Every Microservice Main Class**: Automatically activated by `@EnableDiscoveryClient` or presence of `spring-cloud-starter-netflix-eureka-client`.
+
+---
+
+### Q2: What is the purpose of `X-User-Id`, `X-User-Role`, and `X-User-Email`? Are they required?
+
+> **Verdict**: **YES, they are 100% REQUIRED.** This is the **Gateway Offloading / Trusted Identity Propagation Pattern**.
+> 
+> Look at [JwtAuthGlobalFilter.java](file:///d:/PS_CPS_Project/api-gateway/src/main/java/com/storeconnect/gateway/config/JwtAuthGlobalFilter.java#L80-L89):
+> ```java
+> ServerHttpRequest mutatedRequest = request.mutate()
+>         .header("X-User-Id", userId != null ? userId : "")
+>         .header("X-User-Role", role != null ? role : "CUSTOMER")
+>         .header("X-User-Email", email != null ? email : "")
+>         .build();
+> ```
+> 
+> #### Why are they mandatory?
+> 1. **Perimeter Security Offloading**:  
+>    The API Gateway performs the CPU-heavy cryptographic HMAC-SHA256 signature verification and token expiration check **once at the front door**. Once verified, internal microservices (`user-service`, `order-service`, `payment-service`) do not need to burn CPU cycles repeatedly re-verifying the cryptographic signature.
+> 2. **Business Context Propagation**:  
+>    When a customer calls `POST /api/orders/checkout`, the JSON body only contains `{ "storeId": "STORE-GGN-01", "fulfillmentType": "STORE_PICKUP" }`. The customer **never** passes their customer ID in the JSON body.  
+>    *How does `order-service` know whose cart to checkout and whose order to create?*  
+>    It reads the **`X-User-Id`** header injected by the Gateway!
+> 3. **Role-Based Access Control (`@PreAuthorize`)**:  
+>    Downstream controllers protect endpoints using `@PreAuthorize("hasRole('ADMIN')")`.  
+>    In [InternalHeaderAuthFilter.java](file:///d:/PS_CPS_Project/user-service/src/main/java/com/storeconnect/user/config/InternalHeaderAuthFilter.java#L24-L32), each microservice reads **`X-User-Role`** and sets up Spring Security's `SecurityContextHolder`. Without `X-User-Role`, admin endpoints like `POST /api/products` would immediately reject you with `403 Forbidden`.
+> 4. **Tamper-Proof Anti-Spoofing Security**:  
+>    A malicious client might try to send `X-User-Role: ADMIN` directly from Postman to gain unauthorized privileges. The Gateway intercepts every request, extracts the real role from the cryptographically signed JWT, and **overwrites** any client-supplied headers. The internal microservices can completely trust `X-User-Id` and `X-User-Role` because only the Gateway has network access to route requests to them.
+
