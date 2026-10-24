@@ -1,0 +1,38 @@
+server:
+  port: ${USER_SERVICE_PORT:${SERVER_PORT:8081}}
+
+spring:
+  application:
+    name: user-service
+
+  config:
+    import: optional:file:.env[.properties]
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:storeconnect}?currentSchema=user_schema}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:JaiShriRam321@}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    show-sql: ${SHOW_SQL:true}
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: user_schema
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+eureka:
+  instance:
+    prefer-ip-address: true
+
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+
+jwt:
+  secret: ${JWT_SECRET:c3RvcmVjb25uZWN0LW1pY3Jvc2VydmljZXMtand0LXNlY3JldC1rZXktMjU2LWJpdHMtc2VjdXJl}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}

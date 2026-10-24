@@ -1,0 +1,22 @@
+server:
+  port: ${GATEWAY_PORT:${SERVER_PORT:8080}}
+
+spring:
+  application:
+    name: api-gateway
+
+  config:
+    import: optional:file:.env[.properties]
+
+eureka:
+  instance:
+    prefer-ip-address: true
+
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+
+jwt:
+  secret: ${JWT_SECRET:c3RvcmVjb25uZWN0LW1pY3Jvc2VydmljZXMtand0LXNlY3JldC1rZXktMjU2LWJpdHMtc2VjdXJl}
