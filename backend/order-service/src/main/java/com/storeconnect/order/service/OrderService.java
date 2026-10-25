@@ -21,9 +21,7 @@ public class OrderService {
     private final UserFeignClient userFeignClient;
     private final InventoryFeignClient inventoryFeignClient;
 
-    public OrderService(OrderRepository orderRepository,
-                        UserFeignClient userFeignClient,
-                        InventoryFeignClient inventoryFeignClient) {
+    public OrderService(OrderRepository orderRepository,UserFeignClient userFeignClient,InventoryFeignClient inventoryFeignClient) {
         this.orderRepository = orderRepository;
         this.userFeignClient = userFeignClient;
         this.inventoryFeignClient = inventoryFeignClient;
@@ -32,7 +30,6 @@ public class OrderService {
     @Transactional
     public OrderDTO checkout(String customerId, CheckoutRequest request) {
         CartDTO cart = userFeignClient.getCart(customerId);
-
         if (cart == null || cart.getItems() == null || cart.getItems().isEmpty()) {
             throw new IllegalStateException("Cannot checkout: Cart is empty.");
         }
@@ -45,35 +42,20 @@ public class OrderService {
         String orderId = "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         String orderNumber = "SC-" + System.currentTimeMillis();
 
-        Order order = new Order(
-                orderId,
-                orderNumber,
-                customerId,
-                storeId,
-                "CREATED",
-                request.getFulfillmentType() != null ? request.getFulfillmentType() : "STORE_PICKUP",
-                BigDecimal.ZERO
-        );
+        Order order = new Order(orderId,orderNumber,customerId,storeId,"CREATED",request.getFulfillmentType() != null ? request.getFulfillmentType() : "STORE_PICKUP",BigDecimal.ZERO);
 
         BigDecimal total = BigDecimal.ZERO;
         List<OrderItem> items = new ArrayList<>();
 
         for (CartItemDTO item : cart.getItems()) {
-            // 1. Reserve stock via Feign call to store-inventory-service
+            //  Reserve stock via Feign call to store-inventory-service
             inventoryFeignClient.reserveStock(new StockReservationRequest(storeId, item.getProductId(), item.getQuantity()));
 
             BigDecimal unitPrice = item.getUnitPrice() != null ? item.getUnitPrice() : new BigDecimal("100.00");
             BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
             total = total.add(subtotal);
 
-            OrderItem orderItem = new OrderItem(
-                    "OI-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(),
-                    order,
-                    item.getProductId(),
-                    item.getQuantity(),
-                    unitPrice,
-                    subtotal
-            );
+            OrderItem orderItem = new OrderItem("OI-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(),order,item.getProductId(),item.getQuantity(),unitPrice,subtotal);
             items.add(orderItem);
         }
 
@@ -81,20 +63,18 @@ public class OrderService {
         order.setItems(items);
         Order saved = orderRepository.save(order);
 
-        // 2. Clear customer cart via Feign call to user-service
+        //  Clear customer cart via Feign call to user-service
         userFeignClient.clearCart(customerId);
 
         return toDTO(saved);
     }
 
-    @Transactional(readOnly = true)
     public List<OrderDTO> getOrdersByCustomer(String customerId) {
         return orderRepository.findByCustomerIdOrderByCreatedAtDesc(customerId).stream()
                 .map(this::toDTO)
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public OrderDTO getOrderById(String orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found with id: " + orderId));
@@ -106,17 +86,6 @@ public class OrderService {
                 .map(i -> new OrderItemDTO(i.getId(), i.getProductId(), i.getQuantity(), i.getUnitPrice(), i.getSubtotal()))
                 .toList();
 
-        return new OrderDTO(
-                order.getId(),
-                order.getOrderNumber(),
-                order.getCustomerId(),
-                order.getStoreId(),
-                order.getStatus(),
-                order.getFulfillmentType(),
-                order.getTotalAmount(),
-                itemDTOs,
-                order.getCreatedAt(),
-                order.getUpdatedAt()
-        );
+        return new OrderDTO(order.getId(),order.getOrderNumber(),order.getCustomerId(),order.getStoreId(),order.getStatus(),order.getFulfillmentType(),order.getTotalAmount(),itemDTOs,order.getCreatedAt(),order.getUpdatedAt());
     }
 }

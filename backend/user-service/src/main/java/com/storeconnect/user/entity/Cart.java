@@ -11,7 +11,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Cart {
 
     @Id
@@ -23,7 +22,6 @@ public class Cart {
     @Column(name = "store_id")
     private String storeId;
 
-    @Builder.Default
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<CartItem> items = new ArrayList<>();

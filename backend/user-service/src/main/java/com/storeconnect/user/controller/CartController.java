@@ -18,28 +18,22 @@ public class CartController {
     }
 
     @GetMapping
-    public ResponseEntity<CartDTO> getCart(
-            @RequestHeader("X-User-Id") String customerId) {
+    public ResponseEntity<CartDTO> getCart(@RequestHeader("X-User-Id") String customerId) {
         return ResponseEntity.ok(cartService.getCart(customerId));
     }
 
     @PostMapping("/items")
-    public ResponseEntity<CartDTO> addToCart(
-            @RequestHeader("X-User-Id") String customerId,
-            @Valid @RequestBody AddToCartRequest request) {
+    public ResponseEntity<CartDTO> addToCart(@RequestHeader("X-User-Id") String customerId,@Valid @RequestBody AddToCartRequest request) {
         return ResponseEntity.ok(cartService.addToCart(customerId, request));
     }
 
     @DeleteMapping("/items/{itemId}")
-    public ResponseEntity<CartDTO> removeCartItem(
-            @RequestHeader("X-User-Id") String customerId,
-            @PathVariable("itemId") String itemId) {
+    public ResponseEntity<CartDTO> removeCartItem(@RequestHeader("X-User-Id") String customerId,@PathVariable("itemId") String itemId) {
         return ResponseEntity.ok(cartService.removeItem(customerId, itemId));
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> clearCart(
-            @RequestHeader("X-User-Id") String customerId) {
+    public ResponseEntity<Void> clearCart(@RequestHeader("X-User-Id") String customerId) {
         cartService.clearCart(customerId);
         return ResponseEntity.noContent().build();
     }

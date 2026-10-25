@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
+import './Orders.css';
 
 function Orders({ user }) {
   const [orders, setOrders] = useState([]);
@@ -11,7 +12,6 @@ function Orders({ user }) {
       setLoading(false);
       return;
     }
-
     try {
       setLoading(true);
       const res = await api.get('/api/orders');
@@ -31,7 +31,7 @@ function Orders({ user }) {
     return (
       <div className="orders-empty-box">
         <h2>Please Sign In</h2>
-        <p>Sign in to view your omnichannel store pickup orders.</p>
+        <p>Sign in to view your store pickup orders.</p>
         <Link to="/login" className="btn-primary">Sign In</Link>
       </div>
     );
@@ -44,7 +44,6 @@ function Orders({ user }) {
   if (orders.length === 0) {
     return (
       <div className="orders-empty-box">
-        <div className="empty-icon">📦</div>
         <h2>No Orders Found</h2>
         <p>You have not placed any store pickup orders yet.</p>
         <Link to="/" className="btn-primary">Shop Products Now</Link>
@@ -56,25 +55,19 @@ function Orders({ user }) {
     <div className="orders-container">
       <div className="orders-header">
         <h2>My BOPIS Orders ({orders.length})</h2>
-        <button onClick={fetchOrders} className="btn-refresh">↻ Refresh</button>
+        <button onClick={fetchOrders} className="btn-refresh">Refresh</button>
       </div>
 
       <div className="orders-list">
         {orders.map((order) => {
-          const dateStr = order.createdAt
-            ? new Date(order.createdAt).toLocaleString('en-IN', {
-                dateStyle: 'medium',
-                timeStyle: 'short'
-              })
-            : 'Recent';
+          const dateStr = order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'Recent';
 
           return (
             <div key={order.id} className="order-card">
               <div className="order-card-header">
                 <div>
-                  <span className="order-number-label">Order Number:</span>
                   <span className="order-number-val">{order.orderNumber || order.id}</span>
-                  <span className="order-date">📅 {dateStr}</span>
+                  <span className="order-date">{dateStr}</span>
                 </div>
                 <div>
                   <span className="badge-status">{order.status || 'CREATED'}</span>
@@ -84,12 +77,7 @@ function Orders({ user }) {
 
               <div className="order-meta-row">
                 <span><strong>Pickup Store:</strong> {order.storeId}</span>
-                <span>
-                  <strong>Total:</strong>{' '}
-                  <span className="order-total-price">
-                    ₹{Number(order.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </span>
-                </span>
+                <span className="order-total-price">₹{Number(order.totalAmount).toFixed(2)}</span>
               </div>
 
               {order.items && order.items.length > 0 && (
@@ -108,8 +96,8 @@ function Orders({ user }) {
                         <tr key={item.id || idx}>
                           <td>{item.productId}</td>
                           <td>{item.quantity}</td>
-                          <td>₹{Number(item.unitPrice).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                          <td>₹{Number(item.subtotal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          <td>₹{Number(item.unitPrice).toFixed(2)}</td>
+                          <td>₹{Number(item.subtotal).toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>

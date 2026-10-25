@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Product {
 
     @Id
@@ -31,7 +30,6 @@ public class Product {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Builder.Default
     @Column(name = "is_active")
     private Boolean isActive = true;
 

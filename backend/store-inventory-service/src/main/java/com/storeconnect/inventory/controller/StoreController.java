@@ -18,7 +18,7 @@ public class StoreController {
     }
 
     @GetMapping
-    public ResponseEntity<List<StoreDTO>> getAllStores(@RequestParam(name = "city", required = false) String city) {
+    public ResponseEntity<List<StoreDTO>> getAllStores(String city) {
         return ResponseEntity.ok(storeService.getAllActiveStores(city));
     }
 

@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class CustomerDTO {
     private String id;
     private String firstName;

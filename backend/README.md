@@ -17,8 +17,8 @@ Imagine buying a smartphone online and choosing to pick it up two hours later at
 
 ---
 
-## 🔑 Demo Credentials
+## Roles :
 
-- **Customer**: `rahul.verma@example.com` / `Customer@123`
-- **Admin**: `admin@storeconnect.com` / `Admin@123`
-- **Store Operator**: `operator.ggn@storeconnect.com` / `Operator@123`
+- **Customer**
+- **Admin**
+- **Store Operator**

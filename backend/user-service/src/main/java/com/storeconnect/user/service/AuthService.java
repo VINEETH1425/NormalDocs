@@ -50,7 +50,6 @@ public class AuthService {
         return new AuthResponse(token, "Bearer", jwtUtil.getExpirationMs(), toDTO(saved));
     }
 
-    @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         Customer customer = customerRepository.findByEmailIgnoreCase(request.getEmail().trim())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));

@@ -8,7 +8,6 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Category {
 
     @Id

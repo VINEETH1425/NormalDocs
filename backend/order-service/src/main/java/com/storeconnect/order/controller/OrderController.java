@@ -21,15 +21,12 @@ public class OrderController {
     }
 
     @PostMapping("/checkout")
-    public ResponseEntity<OrderDTO> checkout(
-            @RequestHeader("X-User-Id") String customerId,
-            @Valid @RequestBody CheckoutRequest request) {
+    public ResponseEntity<OrderDTO> checkout(@RequestHeader("X-User-Id") String customerId,@Valid @RequestBody CheckoutRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.checkout(customerId, request));
     }
 
     @GetMapping
-    public ResponseEntity<List<OrderDTO>> getMyOrders(
-            @RequestHeader("X-User-Id") String customerId) {
+    public ResponseEntity<List<OrderDTO>> getMyOrders(@RequestHeader("X-User-Id") String customerId) {
         return ResponseEntity.ok(orderService.getOrdersByCustomer(customerId));
     }
 

@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class InventoryDTO {
     private String id;
     private String storeId;

@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ProductDTO {
     private String id;
 
@@ -27,7 +26,6 @@ public class ProductDTO {
     @DecimalMin(value = "0.0", message = "Price must be non-negative")
     private BigDecimal price;
 
-    @Builder.Default
     private Boolean isActive = true;
 
     public String getProductId() {

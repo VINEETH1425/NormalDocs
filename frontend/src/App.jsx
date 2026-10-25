@@ -5,6 +5,7 @@ import Products from './components/Products';
 import Cart from './components/Cart';
 import Orders from './components/Orders';
 import Login from './components/Login';
+import NotFound from './components/NotFound';
 import api from './api/client';
 import './App.css';
 
@@ -60,17 +61,11 @@ function App() {
 
       <main className="main-content">
         <Routes>
-          <Route
-            path="/"
-            element={<Products user={user} onCartUpdated={refreshCartCount} />}
-          />
-          <Route
-            path="/cart"
-            element={<Cart user={user} onCartUpdated={refreshCartCount} />}
-          />
+          <Route path="/" element={<Products user={user} onCartUpdated={refreshCartCount} />}/>
+          <Route path="/cart" element={<Cart user={user} onCartUpdated={refreshCartCount} />}/>
           <Route path="/orders" element={<Orders user={user} />} />
           <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-          <Route path="*" element={<Products user={user} onCartUpdated={refreshCartCount} />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 

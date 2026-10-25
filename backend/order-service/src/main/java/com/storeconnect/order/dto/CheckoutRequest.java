@@ -6,7 +6,6 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class CheckoutRequest {
     private String storeId;
 

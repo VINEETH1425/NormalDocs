@@ -16,9 +16,7 @@ public class InventoryController {
     }
 
     @GetMapping("/store/{storeId}/product/{productId}")
-    public ResponseEntity<InventoryDTO> getStoreProductStock(
-            @PathVariable("storeId") String storeId,
-            @PathVariable("productId") String productId) {
+    public ResponseEntity<InventoryDTO> getStoreProductStock(@PathVariable("storeId") String storeId,@PathVariable("productId") String productId) {
         return ResponseEntity.ok(inventoryService.getStoreProductStock(storeId, productId));
     }
 }

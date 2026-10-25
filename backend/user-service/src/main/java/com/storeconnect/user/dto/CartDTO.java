@@ -8,7 +8,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class CartDTO {
     private String id;
     private String customerId;

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import './Navbar.css';
 
 function Navbar({ user, onLogout, cartCount }) {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ function Navbar({ user, onLogout, cartCount }) {
     <nav className="navbar">
       <div className="nav-container">
         <Link to="/" className="nav-brand">
-          <span className="brand-icon">🏬</span> StoreConnect
+          StoreConnect
         </Link>
 
         <div className="nav-links">
@@ -28,7 +29,7 @@ function Navbar({ user, onLogout, cartCount }) {
           {user ? (
             <div className="user-info">
               <span className="user-greeting">
-                👤 {user.firstName || user.email}
+                {user.firstName || user.email}
                 {user.role && user.role !== 'CUSTOMER' && (
                   <span className={`role-badge role-${user.role.toLowerCase()}`}>{user.role}</span>
                 )}

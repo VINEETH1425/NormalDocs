@@ -14,7 +14,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Component
-public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
+public class JwtAuthenticationFilter implements GlobalFilter{
 
     private final JwtUtil jwtUtil;
 
@@ -28,7 +28,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         String path = request.getURI().getPath();
         HttpMethod method = request.getMethod();
 
-        // 1. Allow public endpoints
+        //  Allow public endpoints
         if (path.startsWith("/api/auth/") ||
             (method == HttpMethod.GET && (
                 path.startsWith("/api/products") ||
@@ -39,7 +39,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        // 2. Check Authorization header
+        // Check Authorization header
         String authHeader = request.getHeaders().getFirst("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return onError(exchange, HttpStatus.UNAUTHORIZED);
@@ -50,7 +50,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return onError(exchange, HttpStatus.UNAUTHORIZED);
         }
 
-        // 3. Extract claims and inject downstream headers
+        // Extract claims and inject downstream headers
         Claims claims = jwtUtil.extractClaims(token);
         String userId = claims.getSubject();
         String email = claims.get("email", String.class);
@@ -69,10 +69,5 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(status);
         return response.setComplete();
-    }
-
-    @Override
-    public int getOrder() {
-        return -1; // High priority filter
     }
 }

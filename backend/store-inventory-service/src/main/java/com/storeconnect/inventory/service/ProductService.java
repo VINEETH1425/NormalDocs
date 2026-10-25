@@ -24,7 +24,6 @@ public class ProductService {
         this.categoryRepository = categoryRepository;
     }
 
-    @Transactional(readOnly = true)
     public List<ProductDTO> searchProducts(String categoryId, String keyword) {
         List<Product> products;
         boolean hasCategory = categoryId != null && !categoryId.isBlank();
@@ -52,7 +51,6 @@ public class ProductService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public ProductDTO getProductById(String id) {
         Product product = productRepository.findById(id)
                 .orElseGet(() -> productRepository.findBySkuIgnoreCase(id)

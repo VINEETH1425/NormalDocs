@@ -27,7 +27,6 @@ public class InventoryService {
         this.productRepository = productRepository;
     }
 
-    @Transactional(readOnly = true)
     public InventoryDTO getStoreProductStock(String storeId, String productId) {
         Optional<StoreInventory> inventoryOpt = inventoryRepository.findByStoreIdAndProductId(storeId, productId);
         Product product = productRepository.findById(productId).orElse(null);

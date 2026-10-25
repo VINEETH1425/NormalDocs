@@ -1,0 +1,123 @@
+.orders-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.btn-refresh {
+  background: white;
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.order-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.order-number-val {
+  font-weight: 700;
+  font-family: monospace;
+  color: var(--primary);
+  margin-right: 10px;
+}
+
+.order-date {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.badge-status {
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-right: 6px;
+}
+
+.badge-fulfillment {
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.order-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.order-total-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.order-items-table-box {
+  background: #f8fafc;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.order-mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.order-mini-table th,
+.order-mini-table td {
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.order-mini-table th {
+  color: var(--text-muted);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.orders-empty-box {
+  text-align: center;
+  padding: 50px 20px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.orders-empty-box p {
+  color: var(--text-muted);
+  margin: 8px 0 16px;
+}

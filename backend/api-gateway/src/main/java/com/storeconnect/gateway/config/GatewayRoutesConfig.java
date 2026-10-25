@@ -11,7 +11,7 @@ public class GatewayRoutesConfig {
     @Bean
     public RouteLocator routeLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-                // User Service (Auth & Cart)
+                // User Service (Auth, Cart)
                 .route("user-auth", r -> r.path("/api/auth/**").uri("lb://user-service"))
                 .route("user-cart", r -> r.path("/api/cart/**").uri("lb://user-service"))
                 // Store Inventory Service (Products, Categories, Stores, Stock)

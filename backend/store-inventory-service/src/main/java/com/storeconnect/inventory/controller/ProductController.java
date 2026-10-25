@@ -20,9 +20,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductDTO>> searchProducts(
-            @RequestParam(name = "categoryId", required = false) String categoryId,
-            @RequestParam(name = "keyword", required = false) String keyword) {
+    public ResponseEntity<List<ProductDTO>> searchProducts(String categoryId, String keyword) {
         return ResponseEntity.ok(productService.searchProducts(categoryId, keyword));
     }
 
@@ -32,9 +30,7 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductDTO> createProduct(
-            @RequestHeader(value = "X-User-Role", defaultValue = "CUSTOMER") String userRole,
-            @Valid @RequestBody ProductDTO request) {
+    public ResponseEntity<ProductDTO> createProduct(@RequestHeader("X-User-Role") String userRole, @Valid @RequestBody ProductDTO request) {
         if (!"ADMIN".equalsIgnoreCase(userRole)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

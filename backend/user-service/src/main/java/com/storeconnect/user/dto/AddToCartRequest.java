@@ -8,7 +8,6 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class AddToCartRequest {
     @NotBlank(message = "Product ID is required")
     private String productId;

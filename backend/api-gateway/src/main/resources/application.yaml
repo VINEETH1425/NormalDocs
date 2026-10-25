@@ -1,5 +1,5 @@
 server:
-  port: ${GATEWAY_PORT:${SERVER_PORT:8080}}
+  port: ${GATEWAY_PORT}
 
 spring:
   application:
@@ -16,7 +16,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_URL}
 
 jwt:
-  secret: ${JWT_SECRET:c3RvcmVjb25uZWN0LW1pY3Jvc2VydmljZXMtand0LXNlY3JldC1rZXktMjU2LWJpdHMtc2VjdXJl}
+  secret: ${JWT_SECRET}

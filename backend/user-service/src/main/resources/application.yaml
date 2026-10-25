@@ -1,5 +1,5 @@
 server:
-  port: ${USER_SERVICE_PORT:${SERVER_PORT:8081}}
+  port: ${USER_SERVICE_PORT}
 
 spring:
   application:
@@ -9,14 +9,14 @@ spring:
     import: optional:file:.env[.properties]
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:storeconnect}?currentSchema=user_schema}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:JaiShriRam321@}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
-      ddl-auto: ${DDL_AUTO:update}
-    show-sql: ${SHOW_SQL:true}
+      ddl-auto: ${DDL_AUTO}
+    show-sql: ${SHOW_SQL}
     properties:
       hibernate:
         format_sql: true
@@ -31,8 +31,8 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_URL}
 
 jwt:
-  secret: ${JWT_SECRET:c3RvcmVjb25uZWN0LW1pY3Jvc2VydmljZXMtand0LXNlY3JldC1rZXktMjU2LWJpdHMtc2VjdXJl}
-  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS}

@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Store {
 
     @Id
@@ -29,7 +28,6 @@ public class Store {
 
     private String phone;
 
-    @Builder.Default
     @Column(name = "is_active")
     private Boolean isActive = true;
 

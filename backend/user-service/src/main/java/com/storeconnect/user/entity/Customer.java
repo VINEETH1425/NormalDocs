@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Customer {
 
     @Id
@@ -30,7 +29,6 @@ public class Customer {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Builder.Default
     @Column(nullable = false)
     private String role = "CUSTOMER";
 

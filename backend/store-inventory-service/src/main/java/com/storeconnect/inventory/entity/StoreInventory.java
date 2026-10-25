@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class StoreInventory {
 
     @Id
@@ -21,15 +20,12 @@ public class StoreInventory {
     @Column(name = "product_id", nullable = false)
     private String productId;
 
-    @Builder.Default
     @Column(name = "quantity_available", nullable = false)
     private Integer quantityAvailable = 0;
 
-    @Builder.Default
     @Column(name = "quantity_reserved", nullable = false)
     private Integer quantityReserved = 0;
 
-    @Builder.Default
     @Column(name = "reorder_threshold")
     private Integer reorderThreshold = 5;
 

@@ -4,7 +4,6 @@ import com.storeconnect.inventory.dto.StoreDTO;
 import com.storeconnect.inventory.entity.Store;
 import com.storeconnect.inventory.repository.StoreRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,7 +16,6 @@ public class StoreService {
         this.storeRepository = storeRepository;
     }
 
-    @Transactional(readOnly = true)
     public List<StoreDTO> getAllActiveStores(String city) {
         List<Store> stores = (city != null && !city.isBlank())
                 ? storeRepository.findByIsActiveTrueAndCityIgnoreCase(city.trim())
@@ -28,7 +26,6 @@ public class StoreService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public StoreDTO getStoreById(String id) {
         Store store = storeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Store not found with id: " + id));

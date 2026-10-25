@@ -12,7 +12,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Order {
 
     @Id
@@ -27,18 +26,15 @@ public class Order {
     @Column(name = "store_id", nullable = false)
     private String storeId;
 
-    @Builder.Default
     @Column(nullable = false)
     private String status = "CREATED";
 
-    @Builder.Default
     @Column(name = "fulfillment_type", nullable = false)
     private String fulfillmentType = "STORE_PICKUP";
 
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
-    @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<OrderItem> items = new ArrayList<>();
