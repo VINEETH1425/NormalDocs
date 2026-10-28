@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/client';
 import './Products.css';
 
@@ -173,10 +173,19 @@ function Products({ user, onCartUpdated }) {
           const inStock = availableStock > 0;
 
           return (
-            <div key={p.id} className="product-card">
+            <article key={p.id} className="product-card" aria-label={p.name}>
               <div className="product-card-body">
-                <span className="product-sku">{p.sku}</span>
-                <h3 className="product-title">{p.name}</h3>
+                <div className="product-card-top">
+                  <span className="product-sku">{p.sku}</span>
+                  <Link to={`/products/${p.id}`} className="product-detail-link" aria-label={`View details of ${p.name}`}>
+                    Details &rarr;
+                  </Link>
+                </div>
+                <h3 className="product-title">
+                  <Link to={`/products/${p.id}`} className="product-title-link">
+                    {p.name}
+                  </Link>
+                </h3>
                 <p className="product-desc">{p.description}</p>
                 <div className="product-price">₹{Number(p.price).toFixed(2)}</div>
                 <div>
@@ -190,8 +199,11 @@ function Products({ user, onCartUpdated }) {
                 <button className="btn-add-cart" disabled={!inStock} onClick={() => handleAddToCart(p)}>
                   {inStock ? 'Add to Cart' : 'Unavailable'}
                 </button>
+                <Link to={`/products/${p.id}`} className="btn-view-details">
+                  View Full Info
+                </Link>
               </div>
-            </div>
+            </article>
           );
         })}
       </div>

@@ -41,3 +41,11 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+
+### Scratch / Local Work ###
+react_axios_routing/
+cps_notes.txt
+run-backend.bat
+start-services.ps1
+init-db-and-seed.sql
+

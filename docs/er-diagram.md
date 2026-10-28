@@ -2,8 +2,9 @@
 
 **Project:** StoreConnect – Omnichannel Retail Platform  
 **Architecture Theme:** Relational Database Model (PostgreSQL / ANSI SQL)  
-**Schema DDL:** [`src/main/resources/schema.sql`](file:///d:/PS_CPS_Project/src/main/resources/schema.sql)  
-**Seed Data:** [`src/main/resources/seed_data.sql`](file:///d:/PS_CPS_Project/src/main/resources/seed_data.sql)  
+**Schema & Seed Documentation:** [DATABASE_SETUP_AND_SEED_DATA.md](file:///d:/PS_CPS_Project/DATABASE_SETUP_AND_SEED_DATA.md)  
+**Consolidated SQL Script:** [init-db-and-seed.sql](file:///d:/PS_CPS_Project/init-db-and-seed.sql)  
+**Schemas:** user_schema (User Service), inventory_schema (Store Inventory Service), order_schema (Order Service)  
 
 ---
 

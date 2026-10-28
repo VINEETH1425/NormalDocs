@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Products from './components/Products';
+import ProductDetail from './components/ProductDetail';
 import Cart from './components/Cart';
 import Orders from './components/Orders';
 import Login from './components/Login';
@@ -61,8 +62,9 @@ function App() {
 
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<Products user={user} onCartUpdated={refreshCartCount} />}/>
-          <Route path="/cart" element={<Cart user={user} onCartUpdated={refreshCartCount} />}/>
+          <Route path="/" element={<Products user={user} onCartUpdated={refreshCartCount} />} />
+          <Route path="/products/:id" element={<ProductDetail user={user} onCartUpdated={refreshCartCount} />} />
+          <Route path="/cart" element={<Cart user={user} onCartUpdated={refreshCartCount} />} />
           <Route path="/orders" element={<Orders user={user} />} />
           <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
           <Route path="*" element={<NotFound />} />

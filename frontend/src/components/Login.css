@@ -1,8 +1,11 @@
+/* Login.css - Authentication view styling */
+
 .auth-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 30px 16px;
+  padding: 40px 16px;
+  min-height: calc(80vh - 120px);
 }
 
 .auth-card {
@@ -51,12 +54,59 @@
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   font-size: 0.92rem;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .form-group input:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.form-group input.input-error {
+  border-color: #ef4444;
+  background-color: #fffaf0;
+}
+
+.field-error-text {
+  font-size: 0.78rem;
+  color: #dc2626;
+  margin-top: 2px;
+}
+
+/* Password Input & Eye Toggle SVG Button */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  padding-right: 42px;
+}
+
+.btn-toggle-password {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.btn-toggle-password:hover {
+  color: #1e293b;
+}
+
+.btn-toggle-password:focus {
+  outline: 2px solid #3b82f6;
 }
 
 .form-row {
@@ -75,6 +125,7 @@
   font-weight: 600;
   cursor: pointer;
   margin-top: 6px;
+  transition: background 0.15s;
 }
 
 .btn-primary-full:hover:not(:disabled) {
@@ -84,6 +135,30 @@
 .btn-primary-full:disabled {
   background: #94a3b8;
   cursor: not-allowed;
+}
+
+/* Bottom Error Alert Box */
+.alert-error-bottom {
+  margin-top: 8px;
+  padding: 10px 14px;
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .auth-footer {

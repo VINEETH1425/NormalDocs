@@ -1,0 +1,38 @@
+Eye in password
+Validation through regex in email and password
+Overall error in bottom
+Go with flow each maintain my standard.
+Ui don't care
+Max alerts wherever it is necessary
+Max show user admin user flow flow.
+Keep many 25 products so that pagination question will not arrive.
+
+before the demo complete the docs,
+testing for atleast one service properly line, method if possible ,
+All the others thing like sonarqube, etc will be done in next iteration.
+ 
+JWT checking
+
+2. Service file testing for each file
+
+3. SonarQube analysis report
+
+basic backend testing
+add exceptions in backend as final analysis
+ 
+update docs 
+class diagram (microservice based)
+Activity diagram
+ERD (final)
+Database documentation(update based on the current status)
+Lighthouse on the perfect working page(products one)
+Axe(one page)
+Wave(one page)
+responsive (one page)
+Swagger UI
+Jenkins
+Sonarqube
+git clean
+Backend testing in intellij(one file with coverage 100, other files with formality test)
+class documentation
+ 

@@ -4,6 +4,8 @@ import com.storeconnect.inventory.dto.InventoryDTO;
 import com.storeconnect.inventory.entity.Product;
 import com.storeconnect.inventory.entity.Store;
 import com.storeconnect.inventory.entity.StoreInventory;
+import com.storeconnect.inventory.exception.InsufficientStockException;
+import com.storeconnect.inventory.exception.ResourceNotFoundException;
 import com.storeconnect.inventory.repository.ProductRepository;
 import com.storeconnect.inventory.repository.StoreInventoryRepository;
 import com.storeconnect.inventory.repository.StoreRepository;
@@ -58,10 +60,10 @@ public class InventoryService {
     @Transactional
     public void reserveStock(String storeId, String productId, int quantity) {
         StoreInventory inventory = inventoryRepository.findByStoreIdAndProductId(storeId, productId)
-                .orElseThrow(() -> new IllegalArgumentException("No stock record for store " + storeId + " and product " + productId));
+                .orElseThrow(() -> new ResourceNotFoundException("No stock record for store " + storeId + " and product " + productId));
 
         if (inventory.getQuantityAvailable() < quantity) {
-            throw new IllegalStateException("Insufficient stock at store. Requested: " + quantity + ", Available: " + inventory.getQuantityAvailable());
+            throw new InsufficientStockException("Insufficient stock at store. Requested: " + quantity + ", Available: " + inventory.getQuantityAvailable());
         }
 
         inventory.setQuantityAvailable(inventory.getQuantityAvailable() - quantity);

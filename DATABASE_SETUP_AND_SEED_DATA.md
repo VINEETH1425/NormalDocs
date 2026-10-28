@@ -251,41 +251,137 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ----------------------------------------------------------------------------
--- Seed Products (inventory_schema.products)
+-- Seed Products (inventory_schema.products - 25 Realistic Products)
 -- ----------------------------------------------------------------------------
 INSERT INTO inventory_schema.products (id, sku, name, description, category_id, price, is_active, created_at)
 VALUES
-    ('PROD-001', 'SKU-APP-001', 'Shimla Royal Apple (1kg)', 'Crisp, hand-picked sweet mountain apples', 'CAT-PRODUCE', 180.00, TRUE, CURRENT_TIMESTAMP),
-    ('PROD-002', 'SKU-MILK-001', 'A2 Farm Fresh Whole Milk (1L)', 'Pure unadulterated cold-chain farm milk', 'CAT-DAIRY', 75.00, TRUE, CURRENT_TIMESTAMP),
-    ('PROD-003', 'SKU-COF-001', 'Coorg Dark Roast Coffee Beans (250g)', 'Single-estate shade-grown Arabica beans', 'CAT-BEVERAGES', 350.00, TRUE, CURRENT_TIMESTAMP),
-    ('PROD-004', 'SKU-ALM-001', 'California Jumbo Roasted Almonds (500g)', 'Slow roasted, lightly salted premium almonds', 'CAT-SNACKS', 499.00, TRUE, CURRENT_TIMESTAMP)
-ON CONFLICT (id) DO NOTHING;
+    -- Fresh Produce (6 items)
+    ('PROD-001', 'SKU-APP-001', 'Shimla Royal Apple (1kg)', 'Crisp, hand-picked sweet mountain apples from Himachal Pradesh', 'CAT-PRODUCE', 180.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-005', 'SKU-BAN-001', 'Robusta Farm Bananas (1 Dozen)', 'Naturally ripened nutrient-rich golden table bananas', 'CAT-PRODUCE', 65.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-006', 'SKU-SPN-001', 'Hydroponic Baby Spinach (250g)', 'Pesticide-free hydroponically grown tender spinach leaves', 'CAT-PRODUCE', 45.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-007', 'SKU-AVO-001', 'Hass Fresh Avocado (Pack of 2)', 'Creamy imported Hass avocados, rich in healthy omega fats', 'CAT-PRODUCE', 220.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-008', 'SKU-TOM-001', 'Organic Hybrid Tomatoes (1kg)', 'Vine-ripened juicy red organic salad tomatoes', 'CAT-PRODUCE', 40.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-009', 'SKU-ORG-001', 'Nagpur Sweet Oranges (1kg)', 'Juicy high-vitamin C authentic Nagpur table oranges', 'CAT-PRODUCE', 110.00, TRUE, CURRENT_TIMESTAMP),
+
+    -- Dairy & Bakery (6 items)
+    ('PROD-002', 'SKU-MILK-001', 'A2 Farm Fresh Whole Milk (1L)', 'Pure unadulterated cold-chain grass-fed cow milk in glass bottle', 'CAT-DAIRY', 75.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-010', 'SKU-YOG-001', 'Greek Natural Probiotic Yogurt (400g)', 'Thick strained probiotic yogurt with zero added sugar or preservatives', 'CAT-DAIRY', 140.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-011', 'SKU-BRD-001', 'Artisanal Sourdough Boule (450g)', 'Naturally fermented European-style country sourdough bread', 'CAT-DAIRY', 160.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-012', 'SKU-EGG-001', 'Organic Free-Range Eggs (6 Pcs)', 'Hormone-free certified pasture-raised brown hen eggs', 'CAT-DAIRY', 85.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-013', 'SKU-PAN-001', 'Fresh Malai Paneer (200g)', 'Soft artisanal cottage cheese made from fresh whole farm milk', 'CAT-DAIRY', 95.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-014', 'SKU-BUT-001', 'Farm Creamery Salted Butter (500g)', 'Traditional slow-churned pure milk butter lightly seasoned with sea salt', 'CAT-DAIRY', 275.00, TRUE, CURRENT_TIMESTAMP),
+
+    -- Beverages (6 items)
+    ('PROD-003', 'SKU-COF-001', 'Coorg Dark Roast Coffee Beans (250g)', 'Single-estate shade-grown Arabica roasted beans with chocolate notes', 'CAT-BEVERAGES', 350.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-015', 'SKU-TEA-001', 'Himalayan Loose Green Tea (100g)', 'Whole-leaf spring harvest antioxidant green tea from high altitude gardens', 'CAT-BEVERAGES', 240.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-016', 'SKU-JUIC-001', 'Cold-Pressed Valencia Orange Juice (1L)', '100% pure cold-pressed citrus juice with zero added water or sugar', 'CAT-BEVERAGES', 199.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-017', 'SKU-SPK-001', 'Himalayan Sparkling Water (750ml)', 'Naturally carbonated mineral water sourced from pristine mountain springs', 'CAT-BEVERAGES', 85.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-018', 'SKU-OAT-001', 'Barista Plant-Based Oat Milk (1L)', 'Creamy dairy-free oat drink perfect for specialty coffee and breakfast', 'CAT-BEVERAGES', 290.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-019', 'SKU-COC-001', 'Raw Tender Coconut Water (500ml)', 'Unpasteurized bio-secure bottled pure electrolyte coconut water', 'CAT-BEVERAGES', 60.00, TRUE, CURRENT_TIMESTAMP),
+
+    -- Packaged Snacks (7 items)
+    ('PROD-004', 'SKU-ALM-001', 'California Jumbo Roasted Almonds (500g)', 'Slow roasted, lightly salted California premium nonpareil almonds', 'CAT-SNACKS', 499.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-020', 'SKU-GRN-001', 'Honey Almond Protein Granola (400g)', 'Baked rolled oats tossed with raw honey, chia seeds and roasted nuts', 'CAT-SNACKS', 340.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-021', 'SKU-CHIP-001', 'Roasted Multigrain Crisps (150g)', 'Oil-free baked sorghum, quinoa and millet crisps with peri-peri herbs', 'CAT-SNACKS', 120.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-022', 'SKU-CHOC-001', 'Artisanal 70% Dark Chocolate Bar (80g)', 'Single-origin South Indian cacao bean chocolate with caramel notes', 'CAT-SNACKS', 180.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-023', 'SKU-CSH-001', 'W240 Whole Premium Cashews (500g)', 'Grade-A crunchy whole Indian cashew nuts, unpolished and sweet', 'CAT-SNACKS', 550.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-024', 'SKU-TRL-001', 'Superberry Seeds & Nut Trail Mix (200g)', 'Wholesome mix of cranberries, blueberries, pumpkin seeds and walnuts', 'CAT-SNACKS', 280.00, TRUE, CURRENT_TIMESTAMP),
+    ('PROD-025', 'SKU-FOX-001', 'Salt & Pepper Roasted Foxnuts (100g)', 'Crunchy superfood lotus seed makhana slow-roasted in cold pressed olive oil', 'CAT-SNACKS', 150.00, TRUE, CURRENT_TIMESTAMP)
+ON CONFLICT (id) DO UPDATE SET
+    name = EXCLUDED.name,
+    description = EXCLUDED.description,
+    price = EXCLUDED.price,
+    category_id = EXCLUDED.category_id;
 
 -- ----------------------------------------------------------------------------
 -- Seed Store Inventory (inventory_schema.store_inventory)
--- 3 Physical Stores x 4 Products = 12 Stock Records
--- Initial stock: 25 available units per product per store
+-- 3 Physical Stores x 25 Products = 75 Stock Records
 -- ----------------------------------------------------------------------------
 INSERT INTO inventory_schema.store_inventory (id, store_id, product_id, quantity_available, quantity_reserved, reorder_threshold, updated_at)
 VALUES
-    -- Gurugram (GGN-01)
-    ('INV-GGN-01-SKU-APP-001',  'STORE-GGN-01', 'PROD-001', 25, 0, 5, CURRENT_TIMESTAMP),
-    ('INV-GGN-01-SKU-MILK-001', 'STORE-GGN-01', 'PROD-002', 25, 0, 5, CURRENT_TIMESTAMP),
-    ('INV-GGN-01-SKU-COF-001',  'STORE-GGN-01', 'PROD-003', 25, 0, 5, CURRENT_TIMESTAMP),
-    ('INV-GGN-01-SKU-ALM-001',  'STORE-GGN-01', 'PROD-004', 25, 0, 5, CURRENT_TIMESTAMP),
+    -- Gurugram Hub (STORE-GGN-01)
+    ('INV-GGN-PROD-001', 'STORE-GGN-01', 'PROD-001', 35, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-002', 'STORE-GGN-01', 'PROD-002', 40, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-003', 'STORE-GGN-01', 'PROD-003', 25, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-004', 'STORE-GGN-01', 'PROD-004', 30, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-005', 'STORE-GGN-01', 'PROD-005', 45, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-006', 'STORE-GGN-01', 'PROD-006', 20, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-007', 'STORE-GGN-01', 'PROD-007', 18, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-008', 'STORE-GGN-01', 'PROD-008', 50, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-009', 'STORE-GGN-01', 'PROD-009', 30, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-010', 'STORE-GGN-01', 'PROD-010', 25, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-011', 'STORE-GGN-01', 'PROD-011', 22, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-012', 'STORE-GGN-01', 'PROD-012', 35, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-013', 'STORE-GGN-01', 'PROD-013', 28, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-014', 'STORE-GGN-01', 'PROD-014', 20, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-015', 'STORE-GGN-01', 'PROD-015', 30, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-016', 'STORE-GGN-01', 'PROD-016', 25, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-017', 'STORE-GGN-01', 'PROD-017', 40, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-018', 'STORE-GGN-01', 'PROD-018', 25, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-019', 'STORE-GGN-01', 'PROD-019', 35, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-020', 'STORE-GGN-01', 'PROD-020', 28, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-021', 'STORE-GGN-01', 'PROD-021', 45, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-022', 'STORE-GGN-01', 'PROD-022', 50, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-023', 'STORE-GGN-01', 'PROD-023', 22, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-024', 'STORE-GGN-01', 'PROD-024', 30, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-GGN-PROD-025', 'STORE-GGN-01', 'PROD-025', 38, 0, 5, CURRENT_TIMESTAMP),
 
-    -- New Delhi (DEL-01)
-    ('INV-DEL-01-SKU-APP-001',  'STORE-DEL-01', 'PROD-001', 25, 0, 5, CURRENT_TIMESTAMP),
-    ('INV-DEL-01-SKU-MILK-001', 'STORE-DEL-01', 'PROD-002', 25, 0, 5, CURRENT_TIMESTAMP),
-    ('INV-DEL-01-SKU-COF-001',  'STORE-DEL-01', 'PROD-003', 25, 0, 5, CURRENT_TIMESTAMP),
-    ('INV-DEL-01-SKU-ALM-001',  'STORE-DEL-01', 'PROD-004', 25, 0, 5, CURRENT_TIMESTAMP),
+    -- Delhi Flagship (STORE-DEL-01)
+    ('INV-DEL-PROD-001', 'STORE-DEL-01', 'PROD-001', 30, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-002', 'STORE-DEL-01', 'PROD-002', 35, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-003', 'STORE-DEL-01', 'PROD-003', 20, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-004', 'STORE-DEL-01', 'PROD-004', 25, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-005', 'STORE-DEL-01', 'PROD-005', 40, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-006', 'STORE-DEL-01', 'PROD-006', 15, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-007', 'STORE-DEL-01', 'PROD-007', 15, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-008', 'STORE-DEL-01', 'PROD-008', 45, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-009', 'STORE-DEL-01', 'PROD-009', 25, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-010', 'STORE-DEL-01', 'PROD-010', 20, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-011', 'STORE-DEL-01', 'PROD-011', 18, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-012', 'STORE-DEL-01', 'PROD-012', 30, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-013', 'STORE-DEL-01', 'PROD-013', 25, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-014', 'STORE-DEL-01', 'PROD-014', 18, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-015', 'STORE-DEL-01', 'PROD-015', 25, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-016', 'STORE-DEL-01', 'PROD-016', 20, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-017', 'STORE-DEL-01', 'PROD-017', 35, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-018', 'STORE-DEL-01', 'PROD-018', 20, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-019', 'STORE-DEL-01', 'PROD-019', 30, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-020', 'STORE-DEL-01', 'PROD-020', 22, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-021', 'STORE-DEL-01', 'PROD-021', 40, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-022', 'STORE-DEL-01', 'PROD-022', 45, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-023', 'STORE-DEL-01', 'PROD-023', 20, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-024', 'STORE-DEL-01', 'PROD-024', 25, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-DEL-PROD-025', 'STORE-DEL-01', 'PROD-025', 30, 0, 5, CURRENT_TIMESTAMP),
 
-    -- Bengaluru (BLR-01)
-    ('INV-BLR-01-SKU-APP-001',  'STORE-BLR-01', 'PROD-001', 25, 0, 5, CURRENT_TIMESTAMP),
-    ('INV-BLR-01-SKU-MILK-001', 'STORE-BLR-01', 'PROD-002', 25, 0, 5, CURRENT_TIMESTAMP),
-    ('INV-BLR-01-SKU-COF-001',  'STORE-BLR-01', 'PROD-003', 25, 0, 5, CURRENT_TIMESTAMP),
-    ('INV-BLR-01-SKU-ALM-001',  'STORE-BLR-01', 'PROD-004', 25, 0, 5, CURRENT_TIMESTAMP)
-ON CONFLICT (id) DO NOTHING;
+    -- Bengaluru Experience Hub (STORE-BLR-01)
+    ('INV-BLR-PROD-001', 'STORE-BLR-01', 'PROD-001', 30, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-002', 'STORE-BLR-01', 'PROD-002', 35, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-003', 'STORE-BLR-01', 'PROD-003', 40, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-004', 'STORE-BLR-01', 'PROD-004', 30, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-005', 'STORE-BLR-01', 'PROD-005', 35, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-006', 'STORE-BLR-01', 'PROD-006', 25, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-007', 'STORE-BLR-01', 'PROD-007', 22, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-008', 'STORE-BLR-01', 'PROD-008', 40, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-009', 'STORE-BLR-01', 'PROD-009', 28, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-010', 'STORE-BLR-01', 'PROD-010', 30, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-011', 'STORE-BLR-01', 'PROD-011', 25, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-012', 'STORE-BLR-01', 'PROD-012', 35, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-013', 'STORE-BLR-01', 'PROD-013', 30, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-014', 'STORE-BLR-01', 'PROD-014', 25, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-015', 'STORE-BLR-01', 'PROD-015', 35, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-016', 'STORE-BLR-01', 'PROD-016', 30, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-017', 'STORE-BLR-01', 'PROD-017', 45, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-018', 'STORE-BLR-01', 'PROD-018', 35, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-019', 'STORE-BLR-01', 'PROD-019', 40, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-020', 'STORE-BLR-01', 'PROD-020', 30, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-021', 'STORE-BLR-01', 'PROD-021', 45, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-022', 'STORE-BLR-01', 'PROD-022', 50, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-023', 'STORE-BLR-01', 'PROD-023', 25, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-024', 'STORE-BLR-01', 'PROD-024', 35, 0, 5, CURRENT_TIMESTAMP),
+    ('INV-BLR-PROD-025', 'STORE-BLR-01', 'PROD-025', 40, 0, 5, CURRENT_TIMESTAMP)
+ON CONFLICT (store_id, product_id) DO UPDATE SET
+    quantity_available = EXCLUDED.quantity_available,
+    quantity_reserved = EXCLUDED.quantity_reserved;
 ```
 
 ---

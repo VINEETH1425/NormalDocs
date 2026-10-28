@@ -6,6 +6,8 @@ import com.storeconnect.user.dto.CustomerDTO;
 import com.storeconnect.user.dto.LoginRequest;
 import com.storeconnect.user.dto.RegisterRequest;
 import com.storeconnect.user.entity.Customer;
+import com.storeconnect.user.exception.BadRequestException;
+import com.storeconnect.user.exception.UnauthorizedException;
 import com.storeconnect.user.repository.CustomerRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,7 +31,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (customerRepository.existsByEmailIgnoreCase(request.getEmail())) {
-            throw new IllegalArgumentException("Email already registered: " + request.getEmail());
+            throw new BadRequestException("Email already registered: " + request.getEmail());
         }
 
         String id = "CUST-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
@@ -52,10 +54,10 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         Customer customer = customerRepository.findByEmailIgnoreCase(request.getEmail().trim())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), customer.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid email or password");
+            throw new UnauthorizedException("Invalid email or password");
         }
 
         String token = jwtUtil.generateToken(customer.getId(), customer.getEmail(), customer.getRole());

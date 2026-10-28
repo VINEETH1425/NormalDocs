@@ -3,6 +3,8 @@ package com.storeconnect.inventory.service;
 import com.storeconnect.inventory.dto.ProductDTO;
 import com.storeconnect.inventory.entity.Category;
 import com.storeconnect.inventory.entity.Product;
+import com.storeconnect.inventory.exception.BadRequestException;
+import com.storeconnect.inventory.exception.ResourceNotFoundException;
 import com.storeconnect.inventory.repository.CategoryRepository;
 import com.storeconnect.inventory.repository.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -54,7 +56,7 @@ public class ProductService {
     public ProductDTO getProductById(String id) {
         Product product = productRepository.findById(id)
                 .orElseGet(() -> productRepository.findBySkuIgnoreCase(id)
-                        .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id)));
+                        .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id)));
 
         String categoryName = product.getCategoryId() != null
                 ? categoryRepository.findById(product.getCategoryId()).map(Category::getName).orElse("General")
@@ -66,7 +68,7 @@ public class ProductService {
     @Transactional
     public ProductDTO createProduct(ProductDTO request) {
         if (productRepository.existsBySkuIgnoreCase(request.getSku())) {
-            throw new IllegalArgumentException("Product with SKU already exists: " + request.getSku());
+            throw new BadRequestException("Product with SKU already exists: " + request.getSku());
         }
 
         String id = request.getId() != null && !request.getId().isBlank()
