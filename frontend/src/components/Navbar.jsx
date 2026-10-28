@@ -22,7 +22,11 @@ function Navbar({ user, onLogout, cartCount }) {
           <Link to="/cart" className="nav-link">
             Cart {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </Link>
-          {user && <Link to="/orders" className="nav-link">My Orders</Link>}
+          {user && (
+            <Link to="/orders" className="nav-link">
+              {user.role === 'CUSTOMER' ? 'My Orders' : 'Fulfillment & Orders'}
+            </Link>
+          )}
         </div>
 
         <div className="nav-user">

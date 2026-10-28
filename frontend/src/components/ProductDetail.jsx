@@ -16,6 +16,18 @@ function ProductDetail({ user, onCartUpdated }) {
   const [error, setError] = useState('');
   const [actionAlert, setActionAlert] = useState('');
 
+  // Admin Edit Modal State
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({ name: '', price: '', description: '' });
+  const [editLoading, setEditLoading] = useState(false);
+
+  // Store Operator Restock State
+  const [restockQty, setRestockQty] = useState(25);
+  const [restockLoading, setRestockLoading] = useState(false);
+
+  const isAdmin = user?.role === 'ADMIN';
+  const isOperatorOrAdmin = user?.role === 'STORE_OPERATOR' || user?.role === 'ADMIN';
+
   // 1. Fetch product details by ID and list of stores
   useEffect(() => {
     async function fetchProductAndStores() {
@@ -27,6 +39,11 @@ function ProductDetail({ user, onCartUpdated }) {
           api.get('/api/stores')
         ]);
         setProduct(prodRes.data);
+        setEditFormData({
+          name: prodRes.data.name || '',
+          price: prodRes.data.price || '',
+          description: prodRes.data.description || ''
+        });
         setStores(storesRes.data || []);
         if (storesRes.data && storesRes.data.length > 0) {
           setSelectedStore(storesRes.data[0].id);
@@ -41,17 +58,17 @@ function ProductDetail({ user, onCartUpdated }) {
   }, [id]);
 
   // 2. Fetch stock for the selected store
-  useEffect(() => {
+  const fetchStock = async () => {
     if (!selectedStore || !id) return;
-
-    async function fetchStock() {
-      try {
-        const res = await api.get(`/api/inventory/store/${selectedStore}/product/${id}`);
-        setStockInfo(res.data);
-      } catch {
-        setStockInfo({ quantityAvailable: 0, quantityReserved: 0 });
-      }
+    try {
+      const res = await api.get(`/api/inventory/store/${selectedStore}/product/${id}`);
+      setStockInfo(res.data);
+    } catch {
+      setStockInfo({ quantityAvailable: 0, quantityReserved: 0 });
     }
+  };
+
+  useEffect(() => {
     fetchStock();
   }, [selectedStore, id]);
 
@@ -77,6 +94,47 @@ function ProductDetail({ user, onCartUpdated }) {
       setTimeout(() => setActionAlert(''), 3500);
     } catch (err) {
       setActionAlert(err.response?.data?.message || 'Failed to add item to cart.');
+    }
+  };
+
+  // Admin Edit Submit
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    try {
+      const res = await api.put(`/api/products/${product.id}`, {
+        name: editFormData.name.trim(),
+        price: parseFloat(editFormData.price),
+        description: editFormData.description.trim(),
+        categoryId: product.categoryId
+      });
+      setProduct(res.data);
+      setShowEditModal(false);
+      setActionAlert(`Product "${res.data.name}" successfully updated!`);
+      setTimeout(() => setActionAlert(''), 4000);
+    } catch (err) {
+      setActionAlert(err.response?.data?.message || 'Failed to update product details.');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Store Operator Restock Submit
+  const handleRestockSubmit = async (qtyToAdd) => {
+    const qty = qtyToAdd || restockQty;
+    if (qty <= 0) return;
+    setRestockLoading(true);
+    try {
+      const res = await api.post(`/api/inventory/store/${selectedStore}/product/${product.id}/restock`, {
+        quantity: qty
+      });
+      setStockInfo(res.data);
+      setActionAlert(`Restocked +${qty} units of "${product.name}" at store ${selectedStore}!`);
+      setTimeout(() => setActionAlert(''), 4000);
+    } catch (err) {
+      setActionAlert(err.response?.data?.message || 'Failed to restock inventory.');
+    } finally {
+      setRestockLoading(false);
     }
   };
 
@@ -115,9 +173,20 @@ function ProductDetail({ user, onCartUpdated }) {
 
       <div className="product-detail-card">
         <header className="product-detail-header">
-          <div className="badge-row">
-            <span className="detail-category-badge">{product.categoryName || 'Product'}</span>
-            <span className="detail-sku-badge">SKU: {product.sku}</span>
+          <div className="header-top-row">
+            <div className="badge-row">
+              <span className="detail-category-badge">{product.categoryName || 'Product'}</span>
+              <span className="detail-sku-badge">SKU: {product.sku}</span>
+            </div>
+            {isAdmin && (
+              <button
+                type="button"
+                className="btn-admin-edit"
+                onClick={() => setShowEditModal(true)}
+              >
+                ✏️ Edit Product Info (Admin)
+              </button>
+            )}
           </div>
           <h1 className="detail-title">{product.name}</h1>
           <p className="detail-price">₹{Number(product.price).toFixed(2)}</p>
@@ -163,6 +232,51 @@ function ProductDetail({ user, onCartUpdated }) {
               </span>
             )}
           </div>
+
+          {/* Store Operator Restock Controls */}
+          {isOperatorOrAdmin && (
+            <div className="operator-restock-panel">
+              <div className="operator-restock-title">
+                <strong>Store Operator Inventory Restock:</strong>
+              </div>
+              <div className="operator-restock-actions">
+                <button
+                  type="button"
+                  className="btn-quick-restock"
+                  disabled={restockLoading}
+                  onClick={() => handleRestockSubmit(15)}
+                >
+                  +15 Units
+                </button>
+                <button
+                  type="button"
+                  className="btn-quick-restock"
+                  disabled={restockLoading}
+                  onClick={() => handleRestockSubmit(30)}
+                >
+                  +30 Units
+                </button>
+                <div className="custom-restock-input-row">
+                  <input
+                    type="number"
+                    min="1"
+                    max="500"
+                    value={restockQty}
+                    onChange={(e) => setRestockQty(parseInt(e.target.value, 10) || 1)}
+                    className="restock-input"
+                  />
+                  <button
+                    type="button"
+                    className="btn-submit-restock"
+                    disabled={restockLoading}
+                    onClick={() => handleRestockSubmit(restockQty)}
+                  >
+                    {restockLoading ? 'Restocking...' : 'Restock'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Purchase & Action Controls */}
@@ -226,9 +340,56 @@ function ProductDetail({ user, onCartUpdated }) {
           </div>
         </footer>
       </div>
+
+      {/* Admin Edit Product Modal */}
+      {showEditModal && (
+        <div className="modal-backdrop" onClick={() => setShowEditModal(false)}>
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Edit Product Details (Admin)</h3>
+              <button type="button" className="btn-modal-close" onClick={() => setShowEditModal(false)}>✕</button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="admin-product-form">
+              <label>Product Name *</label>
+              <input
+                type="text"
+                required
+                value={editFormData.name}
+                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+              />
+
+              <label>Price (₹) *</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                required
+                value={editFormData.price}
+                onChange={(e) => setEditFormData({ ...editFormData, price: e.target.value })}
+              />
+
+              <label>Description</label>
+              <textarea
+                rows="3"
+                value={editFormData.description}
+                onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+              />
+
+              <div className="modal-footer">
+                <button type="button" className="btn-modal-cancel" onClick={() => setShowEditModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-modal-submit" disabled={editLoading}>
+                  {editLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </article>
   );
 }
 
 export default ProductDetail;
-

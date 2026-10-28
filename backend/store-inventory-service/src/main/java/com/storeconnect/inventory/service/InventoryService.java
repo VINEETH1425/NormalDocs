@@ -79,4 +79,29 @@ public class InventoryService {
             inventoryRepository.save(inv);
         });
     }
+
+    @Transactional
+    public InventoryDTO restock(String storeId, String productId, int quantity) {
+        if (quantity <= 0) {
+            throw new com.storeconnect.inventory.exception.BadRequestException("Restock quantity must be greater than zero");
+        }
+
+        StoreInventory inventory = inventoryRepository.findByStoreIdAndProductId(storeId, productId)
+                .orElseGet(() -> {
+                    StoreInventory newInv = new StoreInventory();
+                    newInv.setId("INV-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+                    newInv.setStoreId(storeId);
+                    newInv.setProductId(productId);
+                    newInv.setQuantityAvailable(0);
+                    newInv.setQuantityReserved(0);
+                    newInv.setReorderThreshold(10);
+                    return newInv;
+                });
+
+        inventory.setQuantityAvailable(inventory.getQuantityAvailable() + quantity);
+        inventory.setUpdatedAt(java.time.LocalDateTime.now());
+        inventoryRepository.save(inventory);
+
+        return getStoreProductStock(storeId, productId);
+    }
 }

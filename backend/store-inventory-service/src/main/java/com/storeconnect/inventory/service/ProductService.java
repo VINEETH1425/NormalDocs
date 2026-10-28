@@ -93,6 +93,34 @@ public class ProductService {
         return toDTO(saved, categoryName);
     }
 
+    @Transactional
+    public ProductDTO updateProduct(String id, ProductDTO request) {
+        Product product = productRepository.findById(id)
+                .orElseGet(() -> productRepository.findBySkuIgnoreCase(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id)));
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            product.setName(request.getName().trim());
+        }
+        if (request.getDescription() != null) {
+            product.setDescription(request.getDescription().trim());
+        }
+        if (request.getPrice() != null) {
+            product.setPrice(request.getPrice());
+        }
+        if (request.getCategoryId() != null && !request.getCategoryId().isBlank()) {
+            product.setCategoryId(request.getCategoryId().trim());
+        }
+
+        Product updated = productRepository.save(product);
+
+        String categoryName = updated.getCategoryId() != null
+                ? categoryRepository.findById(updated.getCategoryId()).map(Category::getName).orElse("General")
+                : "General";
+
+        return toDTO(updated, categoryName);
+    }
+
     public ProductDTO toDTO(Product p, String categoryName) {
         return new ProductDTO(
                 p.getId(),

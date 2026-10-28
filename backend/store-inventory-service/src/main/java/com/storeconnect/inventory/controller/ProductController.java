@@ -30,10 +30,20 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductDTO> createProduct(@RequestHeader("X-User-Role") String userRole, @Valid @RequestBody ProductDTO request) {
+    public ResponseEntity<ProductDTO> createProduct(@RequestHeader(value = "X-User-Role", required = false) String userRole, @Valid @RequestBody ProductDTO request) {
         if (!"ADMIN".equalsIgnoreCase(userRole)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable("id") String id,
+                                                    @RequestHeader(value = "X-User-Role", required = false) String userRole,
+                                                    @RequestBody ProductDTO request) {
+        if (!"ADMIN".equalsIgnoreCase(userRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(productService.updateProduct(id, request));
     }
 }

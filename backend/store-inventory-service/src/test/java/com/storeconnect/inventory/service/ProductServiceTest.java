@@ -132,5 +132,31 @@ class ProductServiceTest {
         assertThrows(BadRequestException.class, () -> productService.createProduct(newDto));
         verify(productRepository, never()).save(any());
     }
+
+    @Test
+    @DisplayName("updateProduct: successfully updates price, name and description")
+    void testUpdateProduct_Success() {
+        ProductDTO updateDto = new ProductDTO(
+                null,
+                "PROD-APPLE-01",
+                "Shimla Royal Gala Apples Premium (1kg)",
+                "Hand-picked crisp apples",
+                "CAT-PRODUCE",
+                null,
+                new BigDecimal("195.00"),
+                true
+        );
+
+        when(productRepository.findById("PROD-APPLE-01")).thenReturn(Optional.of(product));
+        when(productRepository.save(any(Product.class))).thenAnswer(i -> i.getArgument(0));
+        when(categoryRepository.findById("CAT-PRODUCE")).thenReturn(Optional.of(category));
+
+        ProductDTO updated = productService.updateProduct("PROD-APPLE-01", updateDto);
+
+        assertThat(updated).isNotNull();
+        assertThat(updated.getName()).isEqualTo("Shimla Royal Gala Apples Premium (1kg)");
+        assertThat(updated.getPrice()).isEqualTo(new BigDecimal("195.00"));
+        verify(productRepository, times(1)).save(product);
+    }
 }
 

@@ -59,10 +59,34 @@
   margin-bottom: 1.25rem;
 }
 
+.header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+}
+
 .badge-row {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+}
+
+.btn-admin-edit {
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-admin-edit:hover {
+  background-color: #fef3c7;
 }
 
 .detail-category-badge {
@@ -176,6 +200,72 @@
 .stock-val.out-of-stock {
   background-color: #fef2f2;
   color: #b91c1c;
+}
+
+/* Operator Restock Panel */
+.operator-restock-panel {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.operator-restock-title {
+  font-size: 0.85rem;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.operator-restock-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-quick-restock {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-quick-restock:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.custom-restock-input-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.restock-input {
+  width: 60px;
+  padding: 5px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.btn-submit-restock {
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-submit-restock:hover {
+  background-color: #1d4ed8;
 }
 
 .detail-actions-footer {
@@ -309,4 +399,3 @@
   color: #64748b;
   margin-bottom: 1.5rem;
 }
-
