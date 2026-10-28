@@ -124,12 +124,14 @@ classDiagram
             +searchProducts(String categoryId, String keyword) List~ProductDTO~
             +getProductById(String id) ProductDTO
             +createProduct(ProductDTO) ProductDTO
+            +updateProduct(String id, ProductDTO) ProductDTO
         }
 
         class InventoryService {
             -StoreInventoryRepository inventoryRepository
             +getStock(String storeId, String productId) InventoryDTO
             +reserveStock(StockReservationRequest) void
+            +restock(String storeId, String productId, int quantity) InventoryDTO
         }
     }
 

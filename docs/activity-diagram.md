@@ -79,10 +79,10 @@ flowchart TD
 
     ReviewItems --> StartProcessing[Update Status:\nCONFIRMED → PROCESSING]
     StartProcessing --> PrepareItems[Prepare / Pick Items\nfrom Store Inventory]
-    PrepareItems --> MarkReady[Update Status:\nPROCESSING → READY]
-    MarkReady --> CustomerPickup[Customer Picks Up /\nDelivery Dispatched]
-    CustomerPickup --> MarkDelivered[Update Status:\nREADY → DELIVERED]
-    MarkDelivered --> NotifyCustomer[Customer Sees:\nOrder Delivered ✅]
+    PrepareItems --> MarkReady[Update Status:\nPROCESSING → READY_FOR_PICKUP]
+    MarkReady --> CustomerPickup[Customer Arrives for Pickup /\nVerification]
+    CustomerPickup --> MarkDelivered[Update Status:\nREADY_FOR_PICKUP → COMPLETED]
+    MarkDelivered --> NotifyCustomer[Customer & Operator See:\nOrder Completed / Picked Up ✅]
     NotifyCustomer --> End([🔴 End])
 
     style Start fill:#22c55e,color:#fff
@@ -98,20 +98,17 @@ flowchart TD
 
 ```mermaid
 stateDiagram-v2
-    [*] --> CREATED : Customer places order
-
-    CREATED --> CONFIRMED : Inventory validated & reserved
-    CREATED --> CANCELLED : Customer cancels / Stock unavailable
+    [*] --> CONFIRMED : Customer checkout & inventory reserved
 
     CONFIRMED --> PROCESSING : Store operator starts fulfillment
-    CONFIRMED --> CANCELLED : Customer cancels → stock released
+    CONFIRMED --> CANCELLED : Customer/Operator cancels → stock released
 
-    PROCESSING --> READY : Items prepared for pickup/delivery
+    PROCESSING --> READY_FOR_PICKUP : Items prepared & staged in pickup locker
     PROCESSING --> CANCELLED : Issue during fulfillment → stock released
 
-    READY --> DELIVERED : Customer receives order
+    READY_FOR_PICKUP --> COMPLETED : Customer collects order at store counter
 
-    DELIVERED --> [*]
+    COMPLETED --> [*]
     CANCELLED --> [*]
 ```
 
@@ -147,6 +144,6 @@ flowchart TD
 | Flow | Actors Involved | Key System Actions |
 |------|----------------|-------------------|
 | **Order Placement** | Customer, System | Validate inventory → Reserve stock → Create order → Publish Kafka event |
-| **Order Fulfillment** | Store Operator, System | CONFIRMED → PROCESSING → READY → DELIVERED |
+| **Order Fulfillment** | Store Operator, System | CONFIRMED → PROCESSING → READY_FOR_PICKUP → COMPLETED |
 | **Order Cancellation** | Customer/Operator, System | Release reserved stock → Update status to CANCELLED |
 | **Inventory Management** | Store Operator | Restock, view reservations, low-stock alerts |
