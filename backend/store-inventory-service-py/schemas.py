@@ -1,43 +1,23 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 
-class CategoryBase(BaseModel):
-    name: str
-    description: Optional[str] = None
-
-
-class CategoryCreate(CategoryBase):
-    id: Optional[str] = None
-
-
-class CategoryResponse(CategoryBase):
-    id: str
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
-
-
-class ProductBase(BaseModel):
+class ProductCreate(BaseModel):
     sku: str
     name: str
     description: Optional[str] = None
-    category_id: Optional[str] = Field(default=None, alias="categoryId")
+    categoryId: Optional[str] = None
     price: float
-
-
-class ProductCreate(ProductBase):
-    id: Optional[str] = None
-    is_active: bool = Field(default=True, alias="isActive")
-    model_config = ConfigDict(populate_by_name=True)
+    isActive: bool = True
 
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    categoryId: Optional[str] = None
     price: Optional[float] = None
-    category_id: Optional[str] = Field(default=None, alias="categoryId")
-    is_active: Optional[bool] = Field(default=None, alias="isActive")
-    model_config = ConfigDict(populate_by_name=True)
+    isActive: Optional[bool] = None
 
 
 class ProductResponse(BaseModel):
@@ -45,56 +25,68 @@ class ProductResponse(BaseModel):
     sku: str
     name: str
     description: Optional[str] = None
-    category_id: Optional[str] = Field(default=None, alias="categoryId", serialization_alias="categoryId")
-    category_name: Optional[str] = Field(default="General", alias="categoryName", serialization_alias="categoryName")
+    categoryId: Optional[str] = None
+    categoryName: Optional[str] = "General"
     price: float
-    is_active: bool = Field(default=True, alias="isActive", serialization_alias="isActive")
-    created_at: Optional[datetime] = Field(default=None, alias="createdAt", serialization_alias="createdAt")
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    isActive: bool = True
+    createdAt: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True)
 
 
-class StoreBase(BaseModel):
+class CategoryCreate(BaseModel):
+    id: Optional[str] = None
+    name: str
+    description: Optional[str] = None
+
+
+class CategoryResponse(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StoreCreate(BaseModel):
+    id: Optional[str] = None
     name: str
     code: str
     address: str
     city: str
     phone: Optional[str] = None
+    isActive: bool = True
 
 
-class StoreCreate(StoreBase):
-    id: Optional[str] = None
-    is_active: bool = Field(default=True, alias="isActive")
-    model_config = ConfigDict(populate_by_name=True)
-
-
-class StoreResponse(StoreBase):
+class StoreResponse(BaseModel):
     id: str
-    is_active: bool = Field(default=True, alias="isActive", serialization_alias="isActive")
-    created_at: Optional[datetime] = Field(default=None, alias="createdAt", serialization_alias="createdAt")
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    name: str
+    code: str
+    address: str
+    city: str
+    phone: Optional[str] = None
+    isActive: bool = True
+    createdAt: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InventoryResponse(BaseModel):
     id: Optional[str] = None
-    store_id: str = Field(alias="storeId", serialization_alias="storeId")
-    store_name: Optional[str] = Field(default=None, alias="storeName", serialization_alias="storeName")
-    product_id: str = Field(alias="productId", serialization_alias="productId")
-    product_name: Optional[str] = Field(default=None, alias="productName", serialization_alias="productName")
-    product_sku: Optional[str] = Field(default=None, alias="productSku", serialization_alias="productSku")
-    quantity_available: int = Field(default=0, alias="quantityAvailable", serialization_alias="quantityAvailable")
-    quantity_reserved: int = Field(default=0, alias="quantityReserved", serialization_alias="quantityReserved")
-    reorder_threshold: int = Field(default=5, alias="reorderThreshold", serialization_alias="reorderThreshold")
-    updated_at: Optional[datetime] = Field(default=None, alias="updatedAt", serialization_alias="updatedAt")
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    storeId: str
+    storeName: Optional[str] = None
+    productId: str
+    productName: Optional[str] = None
+    productSku: Optional[str] = None
+    quantityAvailable: int = 0
+    quantityReserved: int = 0
+    reorderThreshold: int = 5
+    updatedAt: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RestockRequest(BaseModel):
     quantity: int = 10
-    model_config = ConfigDict(populate_by_name=True)
 
 
-class StockReservationRequest(BaseModel):
-    store_id: str = Field(alias="storeId")
-    product_id: str = Field(alias="productId")
+class StockRequest(BaseModel):
+    storeId: str
+    productId: str
     quantity: int
-    model_config = ConfigDict(populate_by_name=True)
