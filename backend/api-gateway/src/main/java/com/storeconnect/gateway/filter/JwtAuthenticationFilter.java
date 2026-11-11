@@ -30,6 +30,8 @@ public class JwtAuthenticationFilter implements GlobalFilter{
 
         //  Allow public endpoints
         if (path.startsWith("/api/auth/") ||
+            path.startsWith("/v3/api-docs") ||
+            path.startsWith("/swagger-ui") ||
             (method == HttpMethod.GET && (
                 path.startsWith("/api/products") ||
                 path.startsWith("/api/categories") ||
